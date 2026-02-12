@@ -1,0 +1,90 @@
+"use client";
+
+import { LoginForm } from "@/components/auth/login-form";
+import { RegisterForm } from "@/components/auth/register-form";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+
+export default function AuthPage() {
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
+  const [activeTab, setActiveTab] = useState("login");
+
+  if (registrationSuccess) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-neutral-100 p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="flex justify-center mb-4">
+              <div className="rounded-full bg-green-100 p-3">
+                <CheckCircle2 className="h-8 w-8 text-green-600" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl text-green-700">
+              ลงทะเบียนสำเร็จ
+            </CardTitle>
+            <CardDescription>
+              บัญชีของคุณถูกสร้างเรียบร้อยแล้ว กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="rounded-lg bg-green-100/50 p-4 text-center">
+              <p className="text-sm font-medium text-green-800">
+                รหัสประชาชนของท่านคือชื่อผู้ใช้สำหรับเข้าสู่ระบบ
+              </p>
+            </div>
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => {
+                setRegistrationSuccess(false);
+                setActiveTab("login");
+              }}
+            >
+              เข้าสู่ระบบ
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-neutral-100 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-neutral-900">
+            ระบบเลือกตั้งออนไลน์
+          </CardTitle>
+          <CardDescription>เข้าสู่ระบบเพื่อใช้สิทธิเลือกตั้ง</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="login">เข้าสู่ระบบ</TabsTrigger>
+              <TabsTrigger value="register">ลงทะเบียน</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login">
+              <LoginForm />
+            </TabsContent>
+            <TabsContent value="register">
+              <RegisterForm onSuccess={() => setRegistrationSuccess(true)} />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

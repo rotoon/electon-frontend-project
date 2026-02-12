@@ -1,0 +1,97 @@
+import api from "@/lib/api";
+import { useAuthStore } from "@/store/useAuthStore";
+import {
+  AuthResponse,
+  LoginUserInput,
+  MeResponse,
+  RegisterUserInput,
+} from "@/types/auth";
+import { User } from "@/types/user";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
+// Backend wraps all responses in { ok: boolean, data: T }
+interface ApiResponse<T> {
+  ok: boolean;
+  data: T;
+}
+
+export function useLoginMutation() {
+  const router = useRouter();
+  const setUser = useAuthStore((state) => state.setUser);
+  const setToken = useAuthStore((state) => state.setToken);
+
+  return useMutation({
+    mutationFn: async (credentials: LoginUserInput) => {
+      const { data } = await api.post<AuthResponse>("/auth/login", credentials);
+      return data;
+    },
+    onSuccess: async (data) => {
+      setToken(data.accessToken);
+
+      try {
+        const { data: res } =
+          await api.get<ApiResponse<MeResponse>>("/auth/me");
+        const me = res.data;
+
+        const userForStore: User = {
+          id: me.id,
+          citizenId: me.citizenId,
+          firstName: me.firstName,
+          lastName: me.lastName,
+          address: me.address,
+          province: me.province,
+          district: me.district,
+          constituency: me.constituency,
+          roles: me.roles,
+          createdAt: me.createdAt,
+        };
+
+        setUser(userForStore);
+        toast.success("เข้าสู่ระบบสำเร็จ");
+
+        const roles = me.roles || [];
+        if (roles.includes("ROLE_ADMIN")) router.push("/admin/dashboard");
+        else if (roles.includes("ROLE_EC")) router.push("/ec/dashboard");
+        else router.push("/vote");
+      } catch (error) {
+        console.error("Failed to fetch user details:", error);
+        toast.error("เข้าสู่ระบบสำเร็จแต่ไม่สามารถดึงข้อมูลผู้ใช้ได้");
+      }
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "เข้าสู่ระบบไม่สำเร็จ");
+    },
+  });
+}
+
+export function useRegisterMutation(onSuccess?: () => void) {
+  return useMutation({
+    mutationFn: async (userData: RegisterUserInput) => {
+      const { data } = await api.post("/auth/register", userData);
+      return data;
+    },
+    onSuccess: () => {
+      toast.success("ลงทะเบียนสำเร็จ!");
+      onSuccess?.();
+    },
+    onError: (error: unknown) => {
+      const err = error as { response?: { data?: { message?: string } } };
+      toast.error(err.response?.data?.message || "การลงทะเบียนล้มเหลว");
+    },
+  });
+}
+
+export function useMeQuery() {
+  const token = useAuthStore((state) => state.token);
+  return useQuery({
+    queryKey: ["me", token],
+    queryFn: async () => {
+      const { data: res } = await api.get<ApiResponse<MeResponse>>("/auth/me");
+      return res.data;
+    },
+    enabled: !!token,
+  });
+}
