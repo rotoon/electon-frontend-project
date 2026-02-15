@@ -2,24 +2,16 @@
 
 import VoterLayout from '@/components/shared/voter-layout'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { CandidateCard } from '@/components/vote/candidate-card'
+import { PollStatusBadge } from '@/components/vote/poll-status-badge'
+import { VoteConfirmationDialog } from '@/components/vote/vote-confirmation-dialog'
 import { useCandidates } from '@/hooks/use-candidates'
 import { useConstituencyStatus } from '@/hooks/use-constituencies'
 import { useMyVote, useVoteMutation } from '@/hooks/use-vote'
 import { useAuthStore } from '@/store/useAuthStore'
-import { Building2, CheckCircle2, MapPin, User, Vote } from 'lucide-react'
-import Image from 'next/image'
+import { Building2, CheckCircle2, MapPin, Vote } from 'lucide-react'
 import Link from 'next/link'
-import { Candidate } from '@/types/candidate'
 import { useEffect, useState } from 'react'
-
 import { toast } from 'sonner'
 
 export default function VotePage() {
@@ -123,30 +115,30 @@ export default function VotePage() {
 
   return (
     <VoterLayout>
-      <div className='space-y-8'>
+      <div className='space-y-6 md:space-y-8 pb-20 md:pb-0'>
         {/* Header */}
         {/* Header - Enriched District Info */}
         {isAuthenticated && (
-          <div className='bg-white p-6 rounded-[24px] shadow-sm border border-slate-100 mb-8'>
+          <div className='bg-white p-4 md:p-6 rounded-[20px] md:rounded-[24px] shadow-sm border border-slate-100 mb-6 md:mb-8'>
             <div className='flex flex-col md:flex-row justify-between md:items-start gap-4'>
               <div>
-                <h1 className='text-2xl font-bold text-slate-800 mb-4'>
+                <h1 className='text-xl md:text-2xl font-bold text-slate-800 mb-3 md:mb-4'>
                   คูหาเลือกตั้งออนไลน์
                 </h1>
-                <div className='flex flex-wrap gap-x-6 gap-y-3 text-slate-600'>
+                <div className='flex flex-wrap gap-2 md:gap-x-6 gap-y-3 text-slate-600'>
                   <div className='flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100'>
                     <MapPin className='w-4 h-4 text-primary' />
                     <span className='text-sm font-medium'>
-                      จังหวัด{user.province?.name}
+                      จ.{user.province?.name}
                     </span>
                   </div>
                   <div className='flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100'>
                     <Building2 className='w-4 h-4 text-primary' />
                     <span className='text-sm font-medium'>
-                      อำเภอ{user.district?.name}
+                      อ.{user.district?.name}
                     </span>
                   </div>
-                  <div className='flex items-center gap-2 bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10'>
+                  <div className='flex items-center gap-2 bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10 w-full md:w-auto mt-2 md:mt-0'>
                     <Vote className='w-4 h-4 text-primary' />
                     <span className='text-sm font-bold text-primary'>
                       เขตเลือกตั้งที่ {user.constituency?.number}
@@ -154,7 +146,7 @@ export default function VotePage() {
                   </div>
                 </div>
               </div>
-              <div className='mt-2 md:mt-0'>
+              <div className='mt-2 md:mt-0 flex justify-end'>
                 <PollStatusBadge isOpen={pollOpen} />
               </div>
             </div>
@@ -163,21 +155,24 @@ export default function VotePage() {
 
         {/* Vote confirmation info */}
         {currentVote && votedCandidate && (
-          <div className='bg-primary/10 border border-primary/20 p-4 rounded-lg flex items-center text-primary'>
+          <div className='bg-primary/10 border border-primary/20 p-4 rounded-lg flex items-start md:items-center text-primary animate-in fade-in slide-in-from-top-4 duration-500'>
             <CheckCircle2
-              className='w-5 h-5 mr-3 flex-shrink-0'
+              className='w-5 h-5 mr-3 flex-shrink-0 mt-0.5 md:mt-0'
               aria-hidden='true'
             />
-            <span>
+            <span className='text-sm md:text-base'>
               คุณได้ลงคะแนนให้{' '}
-              <strong>หมายเลข {votedCandidate.candidate_number}</strong> แล้ว
+              <strong className='font-bold underline decoration-primary/30 underline-offset-4'>
+                หมายเลข {votedCandidate.candidate_number}
+              </strong>{' '}
+              แล้ว
               {pollOpen && ' (สามารถเปลี่ยนได้)'}
             </span>
           </div>
         )}
 
         {/* Candidates Grid */}
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
           {candidates?.map((candidate) => (
             <CandidateCard
               key={candidate.id}
@@ -190,10 +185,10 @@ export default function VotePage() {
         </div>
 
         {/* Mobile Action Footer */}
-        <div className='fixed bottom-0 left-0 right-0 bg-white border-t p-4 flex justify-center shadow-lg md:hidden z-20'>
+        <div className='fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200 p-4 pb-6 flex justify-center shadow-[0_-4px_20px_rgba(0,0,0,0.05)] md:hidden z-30 safe-area-bottom'>
           <Button
             size='lg'
-            className='w-full max-w-sm text-lg shadow-xl'
+            className='w-full max-w-sm text-lg shadow-xl h-14 rounded-2xl font-bold'
             onClick={handleVote}
             disabled={!canSubmit}
           >
@@ -205,295 +200,24 @@ export default function VotePage() {
         <div className='hidden md:flex justify-end pb-10'>
           <Button
             size='lg'
-            className='text-lg px-12 py-6 shadow-xl'
+            className='text-lg px-12 py-6 shadow-xl h-16 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95'
             onClick={handleVote}
             disabled={!canSubmit}
           >
             {getButtonText()}
           </Button>
         </div>
+
         {/* Confirmation Dialog */}
-        <Dialog
-          open={isConfirmOpen}
+        <VoteConfirmationDialog
+          isOpen={isConfirmOpen}
           onOpenChange={setIsConfirmOpen}
-        >
-          <DialogContent className='max-w-md w-full rounded-2xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl sm:max-w-lg'>
-            <DialogHeader>
-              <DialogTitle className='text-center text-2xl font-bold'>
-                ยืนยันการลงคะแนน
-              </DialogTitle>
-              <DialogDescription className='text-center text-slate-500'>
-                กรุณาตรวจสอบข้อมูลก่อนยืนยันสิทธิของท่าน
-              </DialogDescription>
-            </DialogHeader>
-
-            {selectedCandidate &&
-              (() => {
-                const candidate = candidates?.find(
-                  (c) => c.id === selectedCandidate,
-                )
-                const partyColor = candidate?.party?.color || 'var(--primary)'
-                // Add console log for debugging
-                console.log('Selected Candidate Data:', candidate)
-
-                if (!candidate) return null
-
-                return (
-                  <div
-                    className='bg-slate-50 p-6 rounded-xl flex flex-row items-center gap-6 border border-slate-100 relative overflow-hidden mt-4'
-                    style={
-                      {
-                        '--party-color': partyColor,
-                      } as React.CSSProperties
-                    }
-                  >
-                    <div className='absolute left-0 h-full w-1.5 bg-[var(--party-color)] top-0' />
-
-                    <div className='w-32 h-32 shrink-0 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-slate-200'>
-                      {candidate.image_url ? (
-                        <Image
-                          src={candidate.image_url}
-                          alt={candidate.full_name}
-                          width={128}
-                          height={128}
-                          className='w-full h-full object-cover'
-                          unoptimized={candidate.image_url.startsWith('http')}
-                        />
-                      ) : (
-                        <div className='w-full h-full flex items-center justify-center text-slate-400'>
-                          <User className='w-12 h-12' />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className='flex flex-col items-start'>
-                      <div
-                        className='text-5xl font-black text-[var(--party-color)] mb-1 drop-shadow-sm leading-none'
-                        style={{ fontFamily: 'var(--font-kanit)' }}
-                      >
-                        เบอร์ #{candidate.candidate_number}
-                      </div>
-
-                      <h3 className='text-2xl font-bold text-slate-800 leading-tight'>
-                        {candidate.full_name}
-                      </h3>
-                      <div className='inline-flex items-center mt-2 px-3 py-1 rounded-lg bg-white text-md font-medium text-slate-600 gap-2 shadow-sm'>
-                        {candidate.party?.logo_url && (
-                          <div className='w-8 h-8 relative rounded-lg overflow-hidden'>
-                            <Image
-                              src={candidate.party.logo_url}
-                              alt={candidate.party.name}
-                              fill
-                              className='object-cover'
-                              unoptimized={candidate.party.logo_url.startsWith(
-                                'http',
-                              )}
-                            />
-                          </div>
-                        )}
-                        {candidate.party?.name || 'อิสระ'}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })()}
-
-            <DialogFooter className='grid grid-cols-2 gap-3 sm:space-x-0 mt-2'>
-              <Button
-                variant='outline'
-                onClick={() => setIsConfirmOpen(false)}
-                className='w-full h-12 text-base rounded-xl hover:bg-slate-50 hover:text-slate-900 border-slate-200'
-              >
-                ยกเลิก
-              </Button>
-              <Button
-                onClick={confirmVote}
-                disabled={voteMutation.isPending}
-                className='w-full h-12 text-base rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all font-bold text-white'
-                style={
-                  selectedCandidate
-                    ? ({
-                        backgroundColor: candidates?.find(
-                          (c) => c.id === selectedCandidate,
-                        )?.party?.color,
-                      } as React.CSSProperties)
-                    : {}
-                }
-              >
-                {voteMutation.isPending ? (
-                  <>
-                    <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2' />
-                    กำลังบันทึก...
-                  </>
-                ) : (
-                  'ยืนยันลงคะแนน'
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          selectedCandidate={selectedCandidate}
+          candidates={candidates}
+          isPending={voteMutation.isPending}
+          onConfirm={confirmVote}
+        />
       </div>
     </VoterLayout>
-  )
-}
-
-// === Sub Components ===
-
-interface PollStatusBadgeProps {
-  isOpen?: boolean
-}
-
-function PollStatusBadge({ isOpen }: PollStatusBadgeProps) {
-  if (isOpen) {
-    return (
-      <span className='px-4 py-2 rounded-full bg-green-100 text-green-700  flex items-center'>
-        <span className='w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse motion-reduce:animate-none' />
-        หีบเปิดอยู่
-      </span>
-    )
-  }
-  return (
-    <span className='px-4 py-2 rounded-full bg-red-100 text-red-700  flex items-center'>
-      <span className='w-2 h-2 bg-red-500 rounded-full mr-2' />
-      หีบปิดแล้ว
-    </span>
-  )
-}
-
-interface CandidateCardProps {
-  candidate: Candidate
-  isSelected: boolean
-  isDisabled: boolean
-  onSelect: () => void
-}
-
-function CandidateCard({
-  candidate,
-  isSelected,
-  isDisabled,
-  onSelect,
-}: CandidateCardProps) {
-  const partyColor = candidate.party?.color || 'var(--primary)' // Default to system primary
-  const partyName = candidate.party?.name || 'ผู้สมัครอิสระ'
-  const partyLogo = candidate.party?.logo_url
-
-  return (
-    <div
-      className={`group relative flex flex-col rounded-xl overflow-hidden cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] transform will-change-transform
-        ${isDisabled ? 'opacity-60 grayscale cursor-not-allowed scale-100' : 'hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98]'}
-        ${isSelected ? 'shadow-[0_20px_40px_rgba(0,0,0,0.12)] ring-4 ring-offset-4 ring-offset-white ring-[color:var(--party-color)]' : 'shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-white/50'}
-        bg-white/90 backdrop-blur-3xl
-      `}
-      style={
-        {
-          '--party-color': partyColor,
-        } as React.CSSProperties
-      }
-      onClick={!isDisabled ? onSelect : undefined}
-      role='button'
-      tabIndex={isDisabled ? -1 : 0}
-      onKeyDown={(e) => !isDisabled && e.key === 'Enter' && onSelect()}
-    >
-      {/* Hero Image Section */}
-      <div className='relative aspect-[4/3] overflow-hidden bg-slate-100'>
-        {candidate.image_url ? (
-          <Image
-            src={candidate.image_url}
-            alt={candidate.full_name}
-            width={400}
-            height={300}
-            className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-105'
-            unoptimized
-          />
-        ) : (
-          <div className='w-full h-full flex items-center justify-center bg-slate-100 text-slate-300'>
-            <User className='w-20 h-20' />
-          </div>
-        )}
-
-        {/* Gradient Overlay */}
-        <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent' />
-
-        {/* Top-Right Number Badge */}
-        <div
-          className='absolute top-0 right-0 px-4 py-2 rounded-bl-2xl font-black text-2xl text-white shadow-lg z-10'
-          style={{ backgroundColor: partyColor }}
-        >
-          เบอร์ #{candidate.candidate_number}
-        </div>
-
-        {/* Bottom Content (Inside Image) */}
-        <div className='absolute bottom-0 left-0 right-0 p-4 text-white z-10'>
-          <h3 className='text-lg  leading-tight drop-shadow-md line-clamp-2'>
-            {candidate.full_name}
-          </h3>
-        </div>
-
-        {/* Selection Checkmark */}
-        {isSelected && (
-          <div
-            className='absolute top-0 left-0 bg-primary/90 text-white px-4 py-2 text-xl  rounded-br-xl shadow-sm animate-in zoom-in spin-in-180 duration-300'
-            // style={{ color: partyColor }}
-          >
-            <CheckCircle2
-              className='w-6 h-6'
-              strokeWidth={3}
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Card Content */}
-      <div className='p-4 flex-1 flex flex-col space-y-3'>
-        {/* Party Info */}
-        <div className='flex items-center space-x-4'>
-          <div className='w-16 h-16 rounded-[18px] bg-white shadow-sm flex items-center justify-center overflow-hidden shrink-0 border'>
-            {partyLogo ? (
-              <Image
-                src={partyLogo}
-                alt={partyName}
-                width={64}
-                height={64}
-                className='w-full h-full object-cover'
-                unoptimized
-              />
-            ) : (
-              <div
-                className='w-full h-full rounded-[14px]'
-                style={{ backgroundColor: partyColor, opacity: 0.2 }}
-              />
-            )}
-          </div>
-          <div className='min-w-0'>
-            <p className='text-xs  uppercase tracking-widest mb-1'>
-              สังกัดพรรค
-            </p>
-            <p
-              className='text-xl font-black truncate transition-colors'
-              style={{ color: partyColor }}
-            >
-              {partyName}
-            </p>
-          </div>
-        </div>
-
-        {/* Policy (if available) - Improved typography */}
-        {candidate.party?.policy ? (
-          <div className='pt-2 mt-auto'>
-            <div className='bg-slate-50 p-3 rounded-lg border'>
-              <p className='text-sm font-medium italic line-clamp-2 leading-relaxed'>
-                &quot;{candidate.party.policy}&quot;
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className='pt-2 mt-auto opacity-0'>
-            {' '}
-            {/* Spacer */}
-            <div className='p-3'></div>
-          </div>
-        )}
-      </div>
-    </div>
   )
 }
