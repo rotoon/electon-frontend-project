@@ -2,12 +2,10 @@ import { PaginationMeta } from './common'
 
 export interface Candidate {
   id: number
-  first_name: string
-  last_name: string
+  full_name: string
   candidate_number: number
   national_id?: string
   image_url: string
-  personal_policy: string
   party?: {
     id: number
     name: string

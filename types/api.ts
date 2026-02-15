@@ -4,43 +4,41 @@
  */
 
 export interface ApiConstituency {
-  id: number;
-  province: string;
-  zoneNumber: number;
-  isPollOpen: boolean;
+  id: number
+  province: string
+  zoneNumber: number
+  isPollOpen: boolean
 }
 
 export interface ApiCandidate {
-  id: number;
-  firstName: string;
-  lastName: string;
-  candidateNumber: number;
-  imageUrl: string;
-  personalPolicy: string;
-  party?: ApiPartyInCandidate;
+  id: number
+  fullName: string
+  number: number
+  imageUrl: string
+  party?: ApiPartyInCandidate
 }
 
 export interface ApiPartyInCandidate {
-  id: number;
-  name: string;
-  logoUrl: string;
-  color: string;
-  policy?: string;
+  id: number
+  name: string
+  logoUrl: string
+  color: string
+  policy?: string
 }
 
 export interface ApiParty {
-  id: number;
-  name: string;
-  logoUrl: string | null;
-  policy: string | null;
-  color: string | null;
+  id: number
+  name: string
+  logoUrl: string | null
+  policy: string | null
+  color: string | null
 }
 
 export interface ApiError {
   response?: {
     data?: {
-      message?: string;
-    };
-  };
-  message?: string;
+      message?: string
+    }
+  }
+  message?: string
 }
