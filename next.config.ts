@@ -1,15 +1,18 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  images: {
+    domains: ['api.dicebear.com'],
+  },
   reactCompiler: true,
   async rewrites() {
     return [
       {
-        source: "/api/:path*",
-        destination: "http://localhost:3000/:path*",
+        source: '/api/:path*',
+        destination: 'http://localhost:3000/:path*',
       },
-    ];
+    ]
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

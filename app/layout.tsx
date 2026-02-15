@@ -74,7 +74,6 @@ export default function RootLayout({
           {children}
           <Toaster
             position='top-center'
-            richColors
             visibleToasts={1}
           />
         </Providers>

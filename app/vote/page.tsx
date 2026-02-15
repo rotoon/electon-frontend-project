@@ -2,6 +2,14 @@
 
 import VoterLayout from '@/components/shared/voter-layout'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { useCandidates } from '@/hooks/use-candidates'
 import { useConstituencyStatus } from '@/hooks/use-constituencies'
 import { useMyVote, useVoteMutation } from '@/hooks/use-vote'
@@ -19,6 +27,7 @@ export default function VotePage() {
   const [selectedCandidate, setSelectedCandidate] = useState<number | null>(
     null,
   )
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
 
   // Queries
   const constituencyId = user?.constituency?.id
@@ -50,12 +59,25 @@ export default function VotePage() {
     if (!selectedCandidate) return toast.error('กรุณาเลือกผู้สมัคร')
     if (!constituencyId || !user?.id) return
 
-    voteMutation.mutate({
-      userId: user.id,
-      candidateId: selectedCandidate,
-      constituencyId: constituencyId,
-      isUpdate: !!currentVote,
-    })
+    setIsConfirmOpen(true)
+  }
+
+  const confirmVote = () => {
+    if (!selectedCandidate || !constituencyId || !user?.id) return
+
+    voteMutation.mutate(
+      {
+        userId: user.id,
+        candidateId: selectedCandidate,
+        constituencyId: constituencyId,
+        isUpdate: !!currentVote,
+      },
+      {
+        onSuccess: () => {
+          setIsConfirmOpen(false)
+        },
+      },
+    )
   }
 
   const handleSelectCandidate = (candidateId: number) => {
@@ -190,6 +212,126 @@ export default function VotePage() {
             {getButtonText()}
           </Button>
         </div>
+        {/* Confirmation Dialog */}
+        <Dialog
+          open={isConfirmOpen}
+          onOpenChange={setIsConfirmOpen}
+        >
+          <DialogContent className='max-w-md w-full rounded-2xl border-0 shadow-2xl bg-white/95 backdrop-blur-xl sm:max-w-lg'>
+            <DialogHeader>
+              <DialogTitle className='text-center text-2xl font-bold'>
+                ยืนยันการลงคะแนน
+              </DialogTitle>
+              <DialogDescription className='text-center text-slate-500'>
+                กรุณาตรวจสอบข้อมูลก่อนยืนยันสิทธิของท่าน
+              </DialogDescription>
+            </DialogHeader>
+
+            {selectedCandidate &&
+              (() => {
+                const candidate = candidates?.find(
+                  (c) => c.id === selectedCandidate,
+                )
+                const partyColor = candidate?.party?.color || 'var(--primary)'
+                // Add console log for debugging
+                console.log('Selected Candidate Data:', candidate)
+
+                if (!candidate) return null
+
+                return (
+                  <div
+                    className='bg-slate-50 p-6 rounded-xl flex flex-row items-center gap-6 border border-slate-100 relative overflow-hidden mt-4'
+                    style={
+                      {
+                        '--party-color': partyColor,
+                      } as React.CSSProperties
+                    }
+                  >
+                    <div className='absolute left-0 h-full w-1.5 bg-[var(--party-color)] top-0' />
+
+                    <div className='w-32 h-32 shrink-0 rounded-xl overflow-hidden shadow-lg border-2 border-white bg-slate-200'>
+                      {candidate.image_url ? (
+                        <Image
+                          src={candidate.image_url}
+                          alt={candidate.full_name}
+                          width={128}
+                          height={128}
+                          className='w-full h-full object-cover'
+                          unoptimized={candidate.image_url.startsWith('http')}
+                        />
+                      ) : (
+                        <div className='w-full h-full flex items-center justify-center text-slate-400'>
+                          <User className='w-12 h-12' />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className='flex flex-col items-start'>
+                      <div
+                        className='text-5xl font-black text-[var(--party-color)] mb-1 drop-shadow-sm leading-none'
+                        style={{ fontFamily: 'var(--font-kanit)' }}
+                      >
+                        เบอร์ #{candidate.candidate_number}
+                      </div>
+
+                      <h3 className='text-2xl font-bold text-slate-800 leading-tight'>
+                        {candidate.full_name}
+                      </h3>
+                      <div className='inline-flex items-center mt-2 px-3 py-1 rounded-lg bg-white text-md font-medium text-slate-600 gap-2 shadow-sm'>
+                        {candidate.party?.logo_url && (
+                          <div className='w-8 h-8 relative rounded-lg overflow-hidden'>
+                            <Image
+                              src={candidate.party.logo_url}
+                              alt={candidate.party.name}
+                              fill
+                              className='object-cover'
+                              unoptimized={candidate.party.logo_url.startsWith(
+                                'http',
+                              )}
+                            />
+                          </div>
+                        )}
+                        {candidate.party?.name || 'อิสระ'}
+                      </div>
+                    </div>
+                  </div>
+                )
+              })()}
+
+            <DialogFooter className='grid grid-cols-2 gap-3 sm:space-x-0 mt-2'>
+              <Button
+                variant='outline'
+                onClick={() => setIsConfirmOpen(false)}
+                className='w-full h-12 text-base rounded-xl hover:bg-slate-50 hover:text-slate-900 border-slate-200'
+              >
+                ยกเลิก
+              </Button>
+              <Button
+                onClick={confirmVote}
+                disabled={voteMutation.isPending}
+                className='w-full h-12 text-base rounded-xl shadow-lg shadow-primary/20 hover:opacity-90 transition-all font-bold text-white'
+                style={
+                  selectedCandidate
+                    ? ({
+                        backgroundColor: candidates?.find(
+                          (c) => c.id === selectedCandidate,
+                        )?.party?.color,
+                      } as React.CSSProperties)
+                    : {}
+                }
+              >
+                {voteMutation.isPending ? (
+                  <>
+                    <div className='w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2' />
+                    กำลังบันทึก...
+                  </>
+                ) : (
+                  'ยืนยันลงคะแนน'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </VoterLayout>
   )
