@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button'
 import { useAuthStore } from '@/store/useAuthStore'
-import { LogOut, Menu, X, Vote } from 'lucide-react'
+import { LogOut, Menu, X, Vote, LayoutGrid } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
@@ -26,6 +26,7 @@ export default function VoterLayout({
 
   const navLinks = [
     { href: '/vote', label: 'คูหาเลือกตั้ง' },
+    { href: '/parties', label: 'พรรคการเมือง' },
     { href: '/results', label: 'ผลการเลือกตั้ง' },
   ]
 
@@ -69,6 +70,18 @@ export default function VoterLayout({
               {/* Desktop User Menu */}
               {user ? (
                 <div className='hidden md:flex items-center space-x-4'>
+                  {user.roles && user.roles.length > 1 && (
+                    <Link href='/portal'>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        className='gap-2'
+                      >
+                        <LayoutGrid className='h-4 w-4' />
+                        เปลี่ยนบทบาท
+                      </Button>
+                    </Link>
+                  )}
                   <Link
                     href='/profile'
                     className='text-right hover:opacity-80 transition-opacity'

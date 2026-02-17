@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { LogOut, LucideIcon, Menu } from 'lucide-react'
+import { useAuthStore } from '@/store/useAuthStore'
+import { LayoutGrid, LogOut, LucideIcon, Menu } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -31,6 +32,7 @@ export function SidebarLayout({
   onLogout,
 }: SidebarLayoutProps) {
   const pathname = usePathname()
+  const { user } = useAuthStore()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Variant specific styles
@@ -99,7 +101,21 @@ export function SidebarLayout({
           })}
         </nav>
 
-        <div className='p-4 border-t border-neutral-200 bg-white'>
+        <div className='p-4 border-t border-neutral-200 bg-white space-y-2'>
+          {user && user.roles && user.roles.length > 1 && (
+            <Link
+              href='/portal'
+              className='block'
+            >
+              <Button
+                variant='outline'
+                className='w-full justify-start'
+              >
+                <LayoutGrid className='w-4 h-4 mr-3' />
+                เปลี่ยนบทบาท
+              </Button>
+            </Link>
+          )}
           <Button
             variant='ghost'
             className='w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50'

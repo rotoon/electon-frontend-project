@@ -1,0 +1,14 @@
+# 🧠 Key Decisions
+
+## Architecture Decisions
+
+| Date       | Decision                      | Reason                                                              |
+| ---------- | ----------------------------- | ------------------------------------------------------------------- |
+| 2025-12-16 | ใช้ Toh Framework             | AI-Orchestration Driven Development                                 |
+| 2026-02-17 | Normalize Roles to `string[]` | To simplify frontend logic handling multiple roles format from API. |
+| 2026-02-17 | Use `RoleBadge` System        | Visual distinction for multiple roles (Admin=Red, EC=Blue, etc).    |
+| 2026-02-17 | Role Selection Portal         | Support multi-role users by providing a context switching page.     |
+
+---
+
+_Last updated: 2026-02-17_
