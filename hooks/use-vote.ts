@@ -1,6 +1,7 @@
-import { ConstituencyResultData, Vote } from '@/hooks/types'
+import { ApiCandidateResult, ConstituencyResultData, Vote } from '@/types/vote'
 import api from '@/lib/api'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { AxiosError } from 'axios'
 import { toast } from 'sonner'
 
 // Hook to fetch My Vote
@@ -64,8 +65,7 @@ export function useVoteMutation() {
       queryClient.invalidateQueries({ queryKey: ['ec-stats'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
     },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
+    onError: (error: AxiosError<{ message?: string; error?: string }>) => {
       console.error('Vote Error:', error)
       const message =
         error.response?.data?.message ||
@@ -91,17 +91,6 @@ export function useConstituencyResults(
         `/public/results?constituencyId=${constituencyId}`,
       )
       const apiData = data.data // { isPollOpen, candidates, totalVotes }
-
-      interface ApiCandidateResult {
-        candidateId: number
-        voteCount: number
-        candidateName: string | null
-        candidateNumber: number
-        partyId: number
-        partyName: string
-        partyColor: string
-        imageUrl: string
-      }
 
       // Map candidates to results with rank
       const mappedResults = (apiData.candidates || []).map(

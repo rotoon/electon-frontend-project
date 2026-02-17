@@ -1,4 +1,9 @@
-import { Candidate, ManageCandidatesResult } from '@/hooks/types'
+import {
+  Candidate,
+  ManageCandidatesResult,
+  ApiManageCandidate,
+  CreateCandidatePayload,
+} from '@/types/candidate'
 import api from '@/lib/api'
 import { transformCandidates } from '@/lib/transforms'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -41,24 +46,6 @@ export function useManageCandidates(params: {
 
       const { data } = await api.get(`/ec/candidates?${queryParams.toString()}`)
 
-      interface ApiManageCandidate {
-        id: number
-        firstName: string
-        lastName: string
-        candidateNumber: number
-        imageUrl: string
-        personalPolicy: string
-        nationalId: string
-        constituencyId: number
-        party?: { id: number; name: string; logoUrl: string }
-        constituency?: {
-          id: number
-          province: string
-          zoneNumber: number
-          isPollOpen: boolean
-        }
-      }
-
       const rawCandidates = Array.isArray(data.data) ? data.data : []
       const meta = data.meta || {
         total: 0,
@@ -95,17 +82,6 @@ export function useManageCandidates(params: {
       return { candidates, meta }
     },
   })
-}
-
-interface CreateCandidatePayload {
-  first_name: string
-  last_name: string
-  candidate_number: number
-  party_id: number
-  constituency_id: number
-  image_url: string
-  personal_policy: string
-  national_id: string
 }
 
 export function useCreateCandidateMutation() {

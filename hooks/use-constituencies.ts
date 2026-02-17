@@ -1,11 +1,11 @@
-import { Constituency, ManageConstituenciesResult } from '@/hooks/types'
+import { Constituency, ManageConstituenciesResult } from '@/types/constituency'
 import api from '@/lib/api'
 import { getApiErrorMessage } from '@/lib/error'
 import { transformConstituencies } from '@/lib/transforms'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-export type { Constituency } from '@/hooks/types'
+export type { Constituency } from '@/types/constituency'
 
 // Hook to fetch All Constituencies (Public / Admin / EC)
 export function useConstituencies() {

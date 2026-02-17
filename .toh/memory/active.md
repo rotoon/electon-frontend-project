@@ -2,15 +2,15 @@
 
 ## Current Focus
 
-- Fixed Navigation Link.
+- Completed Full Interface Extraction.
 
 ## In Progress
 
-- [x] Add `/parties` link to `VoterLayout`
+- [x] Notify User.
 
 ## Next Steps
 
-- Notify User.
+- Waiting for user.
 
 ---
 

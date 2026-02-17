@@ -15,3 +15,18 @@ export interface PartyStats {
   policy: string | null
   mpCount: number
 }
+
+export interface ApiPartyItem {
+  id: number
+  name: string
+  logoUrl: string | null
+  policy: string | null
+  color: string | null
+}
+
+export interface PartyPayload {
+  name: string
+  logo_url: string
+  policy: string
+  color: string
+}

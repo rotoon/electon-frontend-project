@@ -32,5 +32,17 @@ export interface ConstituencyResultData {
       } | null
     }
   }[]
+  results: ResultItem[]
   totalVotes: number
+}
+
+export interface ApiCandidateResult {
+  candidateId: number
+  voteCount: number
+  candidateName: string | null
+  candidateNumber: number
+  partyId: number
+  partyName: string
+  partyColor: string
+  imageUrl: string
 }

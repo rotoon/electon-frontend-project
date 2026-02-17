@@ -1,20 +1,21 @@
 import api from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
 
-export interface PublicConstituency {
-  id: number
-  province: string
-  zone_number: number
-  name: string
-}
+import { DashboardData, PublicConstituency } from '@/types/dashboard'
 
 export function usePublicConstituencies() {
   return useQuery<PublicConstituency[]>({
     queryKey: ['public-constituencies'],
     queryFn: async () => {
       const { data } = await api.get('/public/constituencies?limit=1000')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return (data.data || []).map((c: any) => ({
+
+      interface ApiConstituency {
+        id: number
+        province: string
+        zoneNumber: number
+      }
+
+      return (data.data || []).map((c: ApiConstituency) => ({
         id: c.id,
         province: c.province,
         zone_number: c.zoneNumber,
@@ -22,35 +23,6 @@ export function usePublicConstituencies() {
       }))
     },
   })
-}
-
-export interface DashboardPartyStat {
-  id: number
-  name: string
-  color: string
-  seats: number
-  logoUrl: string
-  [key: string]: string | number | undefined
-}
-
-export interface DashboardConstituencyCandidate {
-  voteCount: number
-  partyId: number
-  partyName: string
-  partyColor: string
-}
-
-export interface DashboardConstituency {
-  province: string
-  candidates: DashboardConstituencyCandidate[]
-}
-
-export interface DashboardData {
-  totalVotes: number
-  turnout: number
-  countingProgress: number
-  partyStats: DashboardPartyStat[]
-  constituencies: DashboardConstituency[]
 }
 
 export function useDashboardStats() {
