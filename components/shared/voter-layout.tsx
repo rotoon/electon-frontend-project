@@ -102,7 +102,7 @@ export default function VoterLayout({
                     size='icon'
                     onClick={handleLogout}
                   >
-                    <LogOut className='h-5 w-5 text-slate-500 hover:text-red-500' />
+                    <LogOut className='h-5 w-5' />
                   </Button>
                 </div>
               ) : null}
