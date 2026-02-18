@@ -1,11 +1,9 @@
 'use client'
 
-import {
-  useElectionResults,
-} from '@/hooks/use-dashboard'
+import { useElectionResults } from '@/hooks/use-dashboard'
 import { DashboardConstituency } from '@/types/dashboard'
 import { geoCentroid } from 'd3-geo'
-
+import { memo, useCallback } from 'react'
 import {
   ComposableMap,
   Geographies,
@@ -14,10 +12,8 @@ import {
   ZoomableGroup,
 } from 'react-simple-maps'
 
-// Thailand TopoJSON URL (Provinces) - Local File
 const THAILAND_TOPO_JSON = '/maps/thailand.json'
 
-// Colors for parties (fallback if data missing)
 const PARTY_COLORS: Record<string, string> = {
   PTP: '#E30613',
   MFP: '#F47933',
@@ -26,28 +22,31 @@ const PARTY_COLORS: Record<string, string> = {
   UTN: '#0F1E8E',
 }
 
-export function ThailandMap() {
+const ThailandMapComponent = memo(function ThailandMap() {
   const { data: results } = useElectionResults()
 
-  // Normalize helper
-  const normalize = (n: string) => n.toLowerCase().replace(/\s+/g, '')
+  const normalize = useCallback(
+    (n: string) => n.toLowerCase().replace(/\s+/g, ''),
+    []
+  )
 
-  // Helper to get matching constituencies for a province
-  const getProvinceData = (provinceName: string) => {
-    if (!results || !results.constituencies) return []
-    const normalizedTarget = normalize(provinceName)
-    return results.constituencies.filter((c: DashboardConstituency) => {
-      const normalizedSource = normalize(c.province)
-      return (
-        normalizedSource === normalizedTarget ||
-        normalizedSource.includes(normalizedTarget) ||
-        normalizedTarget.includes(normalizedSource)
-      )
-    })
-  }
+  const getProvinceData = useCallback(
+    (provinceName: string) => {
+      if (!results?.constituencies) return []
+      const normalizedTarget = normalize(provinceName)
+      return results.constituencies.filter((c: DashboardConstituency) => {
+        const normalizedSource = normalize(c.province)
+        return (
+          normalizedSource === normalizedTarget ||
+          normalizedSource.includes(normalizedTarget) ||
+          normalizedTarget.includes(normalizedSource)
+        )
+      })
+    },
+    [results, normalize]
+  )
 
-  // Helper to determine dominant party color
-  const getProvinceColor = (provData: DashboardConstituency[]) => {
+  const getProvinceColor = useCallback((provData: DashboardConstituency[]) => {
     if (provData.length === 0) return '#F1F5F9' // Slate-100
 
     // Count wins per party
@@ -90,7 +89,7 @@ export function ThailandMap() {
     }
 
     return dominantColor
-  }
+  }, [])
 
   return (
     <div className='bg-white rounded-xl shadow-sm border border-slate-200 p-0 overflow-hidden relative h-[50vh] min-h-[400px] md:h-[800px] flex flex-col'>
@@ -193,4 +192,6 @@ export function ThailandMap() {
       </div>
     </div>
   )
-}
+})
+
+export { ThailandMapComponent as ThailandMap }

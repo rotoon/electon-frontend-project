@@ -11,6 +11,7 @@ import {
 import { useConstituencies } from '@/hooks/use-constituencies'
 import { useConstituencyResults } from '@/hooks/use-vote'
 import { Lock, TrendingUp, User } from 'lucide-react'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 
 export default function ResultsPage() {
@@ -126,11 +127,13 @@ export default function ResultsPage() {
                   {/* Image */}
                   <div className='w-16 h-16 rounded-full bg-slate-200 overflow-hidden flex-shrink-0 mr-4'>
                     {item.candidate.image_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={item.candidate.image_url}
                         alt={`${item.candidate.first_name}`}
+                        width={64}
+                        height={64}
                         className='w-full h-full object-cover'
+                        unoptimized
                       />
                     ) : (
                       <div className='w-full h-full flex items-center justify-center bg-slate-200 text-slate-400'>
@@ -149,11 +152,13 @@ export default function ResultsPage() {
                     </h3>
                     <div className='flex items-center text-slate-600 text-sm mt-1'>
                       {item.candidate.party?.logo_url && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={item.candidate.party.logo_url}
                           alt='Party'
+                          width={16}
+                          height={16}
                           className='w-4 h-4 mr-1'
+                          unoptimized
                         />
                       )}
                       {item.candidate.party?.name || 'อิสระ'}

@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { memo, useCallback } from 'react'
 
 interface PaginationBarProps {
   currentPage: number
@@ -22,7 +23,7 @@ interface PaginationBarProps {
 
 const DEFAULT_PAGE_SIZE_OPTIONS = [10, 20, 50, 100]
 
-export function PaginationBar({
+const PaginationBarComponent = memo(function PaginationBar({
   currentPage,
   totalPages,
   totalItems,
@@ -31,12 +32,35 @@ export function PaginationBar({
   onItemsPerPageChange,
   pageSizeOptions = DEFAULT_PAGE_SIZE_OPTIONS,
 }: PaginationBarProps) {
+  const handleItemsPerPageChange = useCallback(
+    (val: string) => onItemsPerPageChange(parseInt(val)),
+    [onItemsPerPageChange]
+  )
+
+  const goToFirstPage = useCallback(() => onPageChange(1), [onPageChange])
+  const goToPrevPage = useCallback(
+    () => onPageChange(Math.max(1, currentPage - 1)),
+    [onPageChange, currentPage]
+  )
+  const goToNextPage = useCallback(
+    () => onPageChange(Math.min(totalPages, currentPage + 1)),
+    [onPageChange, totalPages, currentPage]
+  )
+  const goToLastPage = useCallback(
+    () => onPageChange(totalPages),
+    [onPageChange, totalPages]
+  )
+  const handlePageClick = useCallback(
+    (page: number) => onPageChange(page),
+    [onPageChange]
+  )
+
   return (
     <div className='flex items-center justify-between bg-white p-4 rounded-lg border'>
       <div className='flex items-center space-x-2'>
         <Select
           value={itemsPerPage.toString()}
-          onValueChange={(val) => onItemsPerPageChange(parseInt(val))}
+          onValueChange={handleItemsPerPageChange}
         >
           <SelectTrigger className='w-[120px]'>
             <SelectValue />
@@ -64,7 +88,7 @@ export function PaginationBar({
           <Button
             variant='outline'
             size='sm'
-            onClick={() => onPageChange(1)}
+            onClick={goToFirstPage}
             disabled={currentPage === 1}
           >
             <ChevronLeft className='h-4 w-4' />
@@ -73,7 +97,7 @@ export function PaginationBar({
           <Button
             variant='outline'
             size='sm'
-            onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+            onClick={goToPrevPage}
             disabled={currentPage === 1}
           >
             <ChevronLeft className='h-4 w-4' />
@@ -117,7 +141,7 @@ export function PaginationBar({
                   key={idx}
                   variant={currentPage === page ? 'default' : 'outline'}
                   size='sm'
-                  onClick={() => onPageChange(page)}
+                  onClick={() => handlePageClick(page)}
                   className='w-9'
                 >
                   {page}
@@ -136,7 +160,7 @@ export function PaginationBar({
           <Button
             variant='outline'
             size='sm'
-            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+            onClick={goToNextPage}
             disabled={currentPage === totalPages}
           >
             <ChevronRight className='h-4 w-4' />
@@ -144,7 +168,7 @@ export function PaginationBar({
           <Button
             variant='outline'
             size='sm'
-            onClick={() => onPageChange(totalPages)}
+            onClick={goToLastPage}
             disabled={currentPage === totalPages}
           >
             <ChevronRight className='h-4 w-4' />
@@ -154,4 +178,6 @@ export function PaginationBar({
       )}
     </div>
   )
-}
+})
+
+export { PaginationBarComponent as PaginationBar }
