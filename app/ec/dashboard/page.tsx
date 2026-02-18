@@ -34,23 +34,23 @@ export default function ECDashboard() {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-3xl font-bold tracking-tight text-blue-900">
+      <h2 className="text-2xl font-semibold text-slate-900">
         EC Dashboard
       </h2>
       <div className="grid gap-4 md:grid-cols-3">
         {statItems.map((stat, i) => {
           const Icon = stat.icon;
           return (
-            <Card key={i}>
+            <Card key={i} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
+                <CardTitle className="text-sm font-medium text-slate-500">
                   {stat.label}
                 </CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
+                <Icon className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <p className="text-xs text-muted-foreground">{stat.desc}</p>
+                <div className="text-2xl font-semibold text-slate-900">{stat.value}</div>
+                <p className="text-xs text-slate-400">{stat.desc}</p>
               </CardContent>
             </Card>
           );

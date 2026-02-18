@@ -2,7 +2,13 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ['api.dicebear.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+        pathname: '/**',
+      },
+    ],
   },
   reactCompiler: true,
   async rewrites() {
@@ -12,6 +18,12 @@ const nextConfig: NextConfig = {
         destination: 'http://localhost:3000/:path*',
       },
     ]
+  },
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+    ],
   },
 }
 

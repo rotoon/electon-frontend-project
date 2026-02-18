@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import { CandidateCard } from '@/components/vote/candidate-card'
 import { PollStatusBadge } from '@/components/vote/poll-status-badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { VoteConfirmationDialog } from '@/components/vote/vote-confirmation-dialog'
 import { useCandidates } from '@/hooks/use-candidates'
 import { useConstituencyStatus } from '@/hooks/use-constituencies'
@@ -10,7 +11,7 @@ import { useMyVote, useVoteMutation } from '@/hooks/use-vote'
 import { useAuthStore } from '@/store/useAuthStore'
 import { Building2, CheckCircle2, MapPin, Vote } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, startTransition } from 'react'
 import { toast } from 'sonner'
 
 export default function VotePage() {
@@ -75,18 +76,37 @@ export default function VotePage() {
     if (pollOpen) setSelectedCandidate(candidateId)
   }
 
-  // Pre-select candidate if user has voted - narrowed dependency to specific value
+  const initialized = useRef(false)
   const currentCandidateId = currentVote?.candidate_id
   useEffect(() => {
-    if (currentCandidateId) {
-      setSelectedCandidate(currentCandidateId)
+    if (currentCandidateId && !initialized.current) {
+      initialized.current = true
+      startTransition(() => {
+        setSelectedCandidate(currentCandidateId)
+      })
     }
   }, [currentCandidateId])
-  // Render: Loading
   if (isLoading) {
     return (
-      <div className='flex h-[50vh] items-center justify-center'>
-        <div className='animate-spin motion-reduce:animate-none rounded-full h-12 w-12 border-b-2 border-primary' />
+      <div className='space-y-6 md:space-y-8 pb-20 md:pb-0'>
+        <div className='bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-100 mb-6 md:mb-8'>
+          <Skeleton className='h-7 w-40 mb-4' />
+          <div className='flex flex-wrap gap-2 md:gap-4'>
+            <Skeleton className='h-6 w-24' />
+            <Skeleton className='h-6 w-24' />
+            <Skeleton className='h-6 w-32' />
+          </div>
+        </div>
+        
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className='bg-white p-4 rounded-xl shadow-sm border border-slate-200'>
+              <Skeleton className='h-48 w-full mb-4' />
+              <Skeleton className='h-5 w-3/4 mb-2' />
+              <Skeleton className='h-4 w-1/2' />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
@@ -113,7 +133,7 @@ export default function VotePage() {
       {/* Header */}
       {/* Header - Enriched District Info */}
       {isAuthenticated && (
-        <div className='bg-white p-4 md:p-6 rounded-[20px] md:rounded-[24px] shadow-sm border border-slate-100 mb-6 md:mb-8'>
+        <div className='bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-100 mb-6 md:mb-8'>
           <div className='flex flex-col md:flex-row justify-between md:items-start gap-4'>
             <div>
               <h1 className='text-xl md:text-2xl font-bold text-slate-800 mb-3 md:mb-4'>

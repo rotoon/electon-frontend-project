@@ -5,7 +5,6 @@ import api from '@/lib/api'
 import { useAuthStore } from '@/store/useAuthStore'
 import { Flag, LayoutDashboard, Settings2, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 
 export default function ECLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -20,11 +19,6 @@ export default function ECLayout({ children }: { children: React.ReactNode }) {
     setUser(null)
     router.push('/auth')
   }
-
-  // Basic role check
-  useEffect(() => {
-    // In real app, strict check here
-  }, [user, router])
 
   const navItems = [
     { href: '/ec/dashboard', label: 'ภาพรวม', icon: LayoutDashboard },

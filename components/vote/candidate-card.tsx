@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button'
 import { Candidate } from '@/types/candidate'
 import { CheckCircle2, User } from 'lucide-react'
 import Image from 'next/image'
@@ -60,7 +59,7 @@ export function CandidateCard({
 
         {/* Top-Right Number Badge */}
         <div
-          className='absolute top-0 right-0 px-4 py-2 rounded-bl-2xl font-black text-2xl text-white shadow-lg z-10'
+          className='absolute top-0 right-0 px-4 py-2 rounded-bl-2xl font-bold text-2xl text-white shadow-lg z-10'
           style={{ backgroundColor: partyColor }}
         >
           เบอร์ #{candidate.candidate_number}
@@ -113,7 +112,7 @@ export function CandidateCard({
               สังกัดพรรค
             </p>
             <p
-              className='text-xl font-black truncate transition-colors'
+              className='text-xl font-bold truncate transition-colors'
               style={{ color: partyColor }}
             >
               {partyName}

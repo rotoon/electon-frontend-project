@@ -104,7 +104,7 @@ export default function PartiesPage() {
             </CardHeader>
             <CardContent>
               <div className='flex items-baseline space-x-2 mt-2'>
-                <span className='text-5xl font-extrabold tracking-tighter text-slate-900'>
+                <span className='text-4xl font-semibold tracking-tighter text-slate-900'>
                   {party.mpCount}
                 </span>
                 <span className='text-sm text-slate-500 font-medium'>

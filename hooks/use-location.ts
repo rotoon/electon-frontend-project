@@ -37,7 +37,7 @@ export function useConstituencyByDistrict(districtId: number | undefined) {
           constituency: Constituency;
         }>(`/location/districts/${districtId}/constituencies`);
         return data.constituency;
-      } catch (error) {
+      } catch {
         return null;
       }
     },

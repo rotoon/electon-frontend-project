@@ -1,35 +1,12 @@
-"use client";
-
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useAdminStats } from "@/hooks/use-stats";
 import { Map, Users, Vote } from "lucide-react";
 
-export default function AdminDashboard() {
-  const { data: stats, isLoading } = useAdminStats();
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
+export default function AdminDashboardLoading() {
   const statItems = [
-    {
-      label: "ผู้ลงทะเบียนทั้งหมด",
-      value: stats?.totalVoters.toLocaleString() || "0",
-      icon: Users,
-      desc: `+${stats?.voterChange}% จากเมื่อวาน`,
-    },
-    {
-      label: "จำนวนเขตเลือกตั้ง",
-      value: stats?.totalConstituencies.toLocaleString() || "0",
-      icon: Map,
-      desc: "ครอบคลุมทั่วประเทศ",
-    },
-    {
-      label: "กกต. ในระบบ",
-      value: stats?.totalOfficers.toLocaleString() || "0",
-      icon: Vote,
-      desc: "พร้อมปฏิบัติหน้าที่",
-    },
+    { label: "ผู้ลงทะเบียนทั้งหมด", icon: Users, desc: "% จากเมื่อวาน" },
+    { label: "จำนวนเขตเลือกตั้ง", icon: Map, desc: "ครอบคลุมทั่วประเทศ" },
+    { label: "กกต. ในระบบ", icon: Vote, desc: "พร้อมปฏิบัติหน้าที่" },
   ];
 
   return (
@@ -47,7 +24,7 @@ export default function AdminDashboard() {
                 <Icon className="h-4 w-4 text-primary" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-semibold text-slate-900">{stat.value}</div>
+                <Skeleton className="h-8 w-16 mb-1" />
                 <p className="text-xs text-slate-400">{stat.desc}</p>
               </CardContent>
             </Card>

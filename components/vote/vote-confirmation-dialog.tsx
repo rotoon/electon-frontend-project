@@ -83,7 +83,7 @@ export function VoteConfirmationDialog({
 
                 <div className='flex flex-col items-center sm:items-start text-center sm:text-left min-w-0 flex-1'>
                   <div
-                    className='text-4xl sm:text-5xl font-black text-[var(--party-color)] mb-1 drop-shadow-sm leading-none'
+                    className='text-4xl sm:text-5xl font-bold text-[var(--party-color)] mb-1 drop-shadow-sm leading-none'
                     style={{ fontFamily: 'var(--font-kanit)' }}
                   >
                     เบอร์ #{candidate.candidate_number}

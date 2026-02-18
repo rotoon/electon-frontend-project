@@ -4,7 +4,6 @@ import { useDashboardStats } from '@/hooks/use-dashboard'
 
 import { Leaderboard } from '@/components/dashboard/leaderboard'
 import { ParliamentChart } from '@/components/dashboard/parliament-chart'
-import { ThailandMap } from '@/components/dashboard/thailand-map'
 import { Button } from '@/components/ui/button'
 import {
   AlertCircle,
@@ -16,8 +15,27 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
-import CountUp from 'react-countup'
+
+const ThailandMap = dynamic(
+  () => import('@/components/dashboard/thailand-map').then((mod) => mod.ThailandMap),
+  {
+    loading: () => (
+      <div className="h-[500px] flex items-center justify-center bg-slate-50 rounded-lg">
+        <div className="animate-pulse motion-reduce:animate-none text-slate-400">
+          Loading Map…
+        </div>
+      </div>
+    ),
+    ssr: false,
+  }
+)
+
+const CountUp = dynamic(
+  () => import('react-countup'),
+  { ssr: false }
+)
 
 export default function Home() {
   const {
@@ -59,7 +77,7 @@ export default function Home() {
               />
             </div>
             <div className='block'>
-              <h1 className='font-extrabold text-lg sm:text-xl tracking-tight text-slate-900 leading-none'>
+              <h1 className='font-bold text-lg sm:text-xl tracking-tight text-slate-900 leading-none'>
                 ELECTION
               </h1>
               <p className='text-[9px] sm:text-[10px] text-slate-500 font-semibold tracking-wider uppercase hidden xs:block'>
@@ -94,10 +112,10 @@ export default function Home() {
                       <span className='text-[10px] uppercase font-bold text-slate-500'>
                         {p.name}
                       </span>
-                      <span
-                        className='text-sm font-extrabold'
-                        style={{ color: p.color || '#333' }}
-                      >
+                    <span
+                      className='text-sm font-semibold'
+                      style={{ color: p.color || '#333' }}
+                    >
                         <CountUp
                           end={p.seats}
                           duration={1}
@@ -144,20 +162,19 @@ export default function Home() {
           </div>
         )}
 
-        {/* Top Stats Cards (Odometer Effect) */}
+        {/* Top Stats Cards */}
         <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
-          <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden group hover:border-blue-200 transition-colors'>
-            <div className='absolute top-0 right-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition-transform'></div>
-            <div className='flex items-center justify-between mb-2 relative z-10'>
-              <h3 className='text-slate-500 text-xs font-bold uppercase tracking-wider'>
+          <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200'>
+            <div className='flex items-center justify-between mb-2'>
+              <h3 className='text-slate-500 text-xs font-medium uppercase tracking-wider'>
                 Total Votes
               </h3>
               <Vote
-                className='w-5 h-5 text-blue-500'
+                className='w-5 h-5 text-primary'
                 aria-hidden='true'
               />
             </div>
-            <p className='text-4xl font-extrabold text-slate-900 relative z-10'>
+            <p className='text-3xl font-semibold text-slate-900'>
               {loading ? (
                 <span className='animate-pulse motion-reduce:animate-none'>
                   …
@@ -170,23 +187,22 @@ export default function Home() {
                 />
               )}
             </p>
-            <p className='text-xs text-slate-400 font-medium mt-1 flex items-center relative z-10'>
+            <p className='text-xs text-slate-400 font-medium mt-1 flex items-center'>
               Verified Votes (Nationwide)
             </p>
           </div>
 
-          <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden group hover:border-green-200 transition-colors'>
-            <div className='absolute top-0 right-0 w-24 h-24 bg-green-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition-transform'></div>
-            <div className='flex items-center justify-between mb-2 relative z-10'>
-              <h3 className='text-slate-500 text-xs font-bold uppercase tracking-wider'>
+          <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200'>
+            <div className='flex items-center justify-between mb-2'>
+              <h3 className='text-slate-500 text-xs font-medium uppercase tracking-wider'>
                 Voter Turnout
               </h3>
               <Users
-                className='w-5 h-5 text-green-500'
+                className='w-5 h-5 text-primary'
                 aria-hidden='true'
               />
             </div>
-            <p className='text-4xl font-extrabold text-slate-900 relative z-10'>
+            <p className='text-3xl font-semibold text-slate-900'>
               {loading ? (
                 <span className='animate-pulse motion-reduce:animate-none'>
                   …
@@ -200,7 +216,7 @@ export default function Home() {
                 />
               )}
             </p>
-            <div className='flex items-center text-xs text-green-600 font-bold mt-1 relative z-10'>
+            <div className='flex items-center text-xs text-primary font-medium mt-1'>
               <TrendingUp
                 className='w-3 h-3 mr-1'
                 aria-hidden='true'
@@ -209,20 +225,19 @@ export default function Home() {
             </div>
           </div>
 
-          <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative overflow-hidden group hover:border-purple-200 transition-colors'>
-            <div className='absolute top-0 right-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-4 -mt-4 opacity-50 group-hover:scale-110 transition-transform'></div>
-            <div className='flex items-center justify-between mb-2 relative z-10'>
-              <h3 className='text-slate-500 text-xs font-bold uppercase tracking-wider'>
+          <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200'>
+            <div className='flex items-center justify-between mb-2'>
+              <h3 className='text-slate-500 text-xs font-medium uppercase tracking-wider'>
                 Poll Status
               </h3>
               <RefreshCw
-                className={`w-5 h-5 text-purple-500 ${
+                className={`w-5 h-5 text-primary ${
                   loading ? 'animate-spin motion-reduce:animate-none' : ''
                 }`}
                 aria-hidden='true'
               />
             </div>
-            <p className='text-4xl font-extrabold text-slate-900 relative z-10'>
+            <p className='text-3xl font-semibold text-slate-900'>
               {loading ? (
                 <span className='animate-pulse motion-reduce:animate-none'>
                   …
@@ -236,9 +251,9 @@ export default function Home() {
                 />
               )}
             </p>
-            <div className='w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden relative z-10'>
+            <div className='w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden'>
               <div
-                className='bg-purple-600 h-1.5 rounded-full transition-all duration-1000 ease-out'
+                className='bg-primary h-1.5 rounded-full transition-all duration-1000 ease-out'
                 style={{ width: `${data?.countingProgress || 0}%` }}
               ></div>
             </div>

@@ -1,5 +1,4 @@
 import { Badge } from '@/components/ui/badge'
-import { Role } from '@/types/auth'
 
 interface RoleBadgeProps {
   role: string

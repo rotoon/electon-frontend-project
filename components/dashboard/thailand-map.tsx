@@ -1,9 +1,9 @@
 'use client'
 
 import {
-  DashboardConstituency,
   useElectionResults,
 } from '@/hooks/use-dashboard'
+import { DashboardConstituency } from '@/types/dashboard'
 import { geoCentroid } from 'd3-geo'
 
 import {
