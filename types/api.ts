@@ -5,9 +5,13 @@
 
 export interface ApiConstituency {
   id: number
-  province: string
-  zoneNumber: number
-  isPollOpen: boolean
+  number: number
+  provinceId: number
+  isClosed: boolean
+  province?: {
+    id: number
+    name: string
+  }
 }
 
 export interface ApiCandidate {

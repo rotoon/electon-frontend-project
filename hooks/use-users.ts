@@ -8,12 +8,26 @@ export function useUsers() {
   return useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const { data } = await api.get('/admin/users?limit=1000')
+      const { data } = await api.get('/users?limit=1000')
+      const allData = data.users || []
 
-      return (data.data || []).map((u: ApiUser) => ({
-        ...u,
-        citizenId: u.citizenId || u.nationalId || '',
-      })) as User[]
+      return allData.map((u: ApiUser) => {
+        let roles: string[] = []
+        if (Array.isArray(u.roles)) {
+          roles = u.roles
+            .map((r: unknown) => {
+              if (typeof r === 'string') return r
+              return (r as { role?: { name?: string } })?.role?.name || ''
+            })
+            .filter(Boolean)
+        }
+
+        return {
+          ...u,
+          citizenId: u.citizenId || u.nationalId || '',
+          roles: roles.length > 0 ? roles : ['ROLE_VOTER'],
+        } as User
+      })
     },
   })
 }
@@ -29,32 +43,55 @@ export function useManageUsers(params: {
   return useQuery<ManageUsersResult>({
     queryKey: ['manage-users', role, page, limit],
     queryFn: async () => {
-      const queryParams = new URLSearchParams()
-      queryParams.set('page', page.toString())
-      queryParams.set('limit', limit.toString())
+      // Fetch all users for client-side pagination
+      const { data } = await api.get('/users?limit=1000')
 
-      if (role && role !== 'all') {
-        queryParams.set('role', role)
+      // Backend returns { message, total, users: [], page, totalPages }
+      const allData = data.users || []
+      
+      // Filter by search text if provided
+      let filteredData = allData
+      if (role && role.trim()) {
+        const search = role.toLowerCase().trim()
+        filteredData = allData.filter((u: ApiUser) => {
+          const fullName = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase()
+          const citizenId = u.citizenId || u.nationalId || ''
+          return fullName.includes(search) || citizenId.includes(search)
+        })
       }
 
-      const { data } = await api.get(`/admin/users?${queryParams.toString()}`)
+      // Client-side pagination
+      const total = filteredData.length
+      const totalPages = Math.ceil(total / limit)
+      const start = (page - 1) * limit
+      const paginatedData = filteredData.slice(start, start + limit)
 
-      const rawData = data.data || []
-      const meta = data.meta || { total: 0, page: 1, limit: 10, totalPages: 1 }
+      const users = paginatedData.map((u: ApiUser) => {
+        // Handle roles from API - may be array of { role: { name } } or array of strings
+        let roles: string[] = []
+        if (Array.isArray(u.roles)) {
+          roles = u.roles
+            .map((r: unknown) => {
+              if (typeof r === 'string') return r
+              return (r as { role?: { name?: string } })?.role?.name || ''
+            })
+            .filter(Boolean)
+        }
 
-      const users = rawData.map((u: ApiUser) => ({
-        id: u.id,
-        citizenId: u.citizenId || u.nationalId,
-        firstName: u.firstName,
-        lastName: u.lastName,
-        address: u.address,
-        province: u.province,
-        district: u.district,
-        roles: u.roles,
-        createdAt: u.createdAt,
-      }))
+        return {
+          id: u.id,
+          citizenId: u.citizenId || u.nationalId || '',
+          firstName: u.firstName,
+          lastName: u.lastName,
+          address: u.address,
+          province: u.province,
+          district: u.district,
+          roles: roles.length > 0 ? roles : ['ROLE_VOTER'],
+          createdAt: u.createdAt,
+        }
+      })
 
-      return { users, meta }
+      return { users, meta: { total, page, limit, totalPages } }
     },
   })
 }

@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { PaginationBar } from "@/components/shared/pagination-bar";
-import { Button } from "@/components/ui/button";
+import { PaginationBar } from '@/components/shared/pagination-bar'
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -10,16 +10,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select'
 import {
   Table,
   TableBody,
@@ -27,17 +27,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table'
 import {
   useAdminConstituencies,
-  useConstituencies,
   useCreateConstituencyMutation,
   useDeleteConstituencyMutation,
-} from "@/hooks/use-constituencies";
-import { Plus, Trash } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
+} from '@/hooks/use-constituencies'
+import { useProvinces } from '@/hooks/use-location'
+import { Plus, Trash } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 // Wrapper component with Suspense boundary for useSearchParams
 export default function ManageConstituenciesPage() {
@@ -45,143 +45,141 @@ export default function ManageConstituenciesPage() {
     <Suspense fallback={<ConstituenciesPageSkeleton />}>
       <ConstituenciesPageContent />
     </Suspense>
-  );
+  )
 }
 
 function ConstituenciesPageSkeleton() {
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div className="h-9 w-48 bg-slate-200 rounded animate-pulse" />
-        <div className="h-10 w-40 bg-slate-200 rounded animate-pulse" />
+    <div className='space-y-6'>
+      <div className='flex justify-between items-center'>
+        <div className='h-9 w-48 bg-slate-200 rounded animate-pulse' />
+        <div className='h-10 w-40 bg-slate-200 rounded animate-pulse' />
       </div>
-      <div className="bg-white p-4 rounded-lg border">
-        <div className="h-10 w-full bg-slate-100 rounded animate-pulse" />
+      <div className='bg-white p-4 rounded-lg border'>
+        <div className='h-10 w-full bg-slate-100 rounded animate-pulse' />
       </div>
-      <div className="border rounded-md p-4 space-y-2">
+      <div className='border rounded-md p-4 space-y-2'>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="h-12 bg-slate-100 rounded animate-pulse" />
+          <div
+            key={i}
+            className='h-12 bg-slate-100 rounded animate-pulse'
+          />
         ))}
       </div>
     </div>
-  );
+  )
 }
 
 function ConstituenciesPageContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Read from URL params or use defaults
   const [filterProvince, setFilterProvince] = useState<string>(
-    searchParams.get("province") || "all"
-  );
+    searchParams.get('province') || 'all',
+  )
   const [currentPage, setCurrentPage] = useState(
-    parseInt(searchParams.get("page") || "1")
-  );
+    parseInt(searchParams.get('page') || '1'),
+  )
   const [itemsPerPage, setItemsPerPage] = useState(
-    parseInt(searchParams.get("limit") || "10")
-  );
+    parseInt(searchParams.get('limit') || '10'),
+  )
 
   // Update URL when params change
   const updateURL = useCallback(() => {
-    const params = new URLSearchParams();
-    if (filterProvince !== "all") params.set("province", filterProvince);
-    if (currentPage !== 1) params.set("page", currentPage.toString());
-    if (itemsPerPage !== 10) params.set("limit", itemsPerPage.toString());
+    const params = new URLSearchParams()
+    if (filterProvince !== 'all') params.set('province', filterProvince)
+    if (currentPage !== 1) params.set('page', currentPage.toString())
+    if (itemsPerPage !== 10) params.set('limit', itemsPerPage.toString())
 
-    const queryString = params.toString();
-    router.push(queryString ? `?${queryString}` : "/admin/constituencies", {
+    const queryString = params.toString()
+    router.push(queryString ? `?${queryString}` : '/admin/constituencies', {
       scroll: false,
-    });
-  }, [filterProvince, currentPage, itemsPerPage, router]);
+    })
+  }, [filterProvince, currentPage, itemsPerPage, router])
 
   useEffect(() => {
-    updateURL();
-  }, [updateURL]);
+    updateURL()
+  }, [updateURL])
 
   // Hooks - server side pagination
   const { data, isLoading, refetch } = useAdminConstituencies({
     province: filterProvince,
     page: currentPage,
     limit: itemsPerPage,
-  });
+  })
 
-  // Get all constituencies for province dropdown
-  const { data: allConstituencies } = useConstituencies();
+  const { data: provinces } = useProvinces()
 
-  const createConstituency = useCreateConstituencyMutation();
-  const deleteConstituency = useDeleteConstituencyMutation();
+  const createConstituency = useCreateConstituencyMutation()
+  const deleteConstituency = useDeleteConstituencyMutation()
 
-  const constituencies = data?.constituencies || [];
+  const constituencies = data?.constituencies || []
   const meta = data?.meta || {
     total: 0,
     page: 1,
     limit: itemsPerPage,
     totalPages: 1,
-  };
+  }
 
-  // Get unique provinces for filter dropdown
-  const provinces = useMemo(() => {
-    return Array.from(
-      new Set(allConstituencies?.map((c) => c.province) || [])
-    ).sort();
-  }, [allConstituencies]);
-
-  const [isOpen, setIsOpen] = useState(false);
-  const [province, setProvince] = useState("");
-  const [zone, setZone] = useState("");
+  const [isOpen, setIsOpen] = useState(false)
+  const [provinceId, setProvinceId] = useState<string>('')
+  const [zone, setZone] = useState('')
 
   // Handlers
   const handleFilterProvinceChange = (value: string) => {
-    setFilterProvince(value);
-    setCurrentPage(1);
-  };
+    setFilterProvince(value)
+    setCurrentPage(1)
+  }
 
   const handleItemsPerPageChange = (limit: number) => {
-    setItemsPerPage(limit);
-    setCurrentPage(1);
-  };
+    setItemsPerPage(limit)
+    setCurrentPage(1)
+  }
 
   async function handleCreate() {
-    if (!province || !zone) {
-      toast.error("กรุณากรอกข้อมูลให้ครบ");
-      return;
+    if (!provinceId || !zone) {
+      toast.error('กรุณากรอกข้อมูลให้ครบ')
+      return
     }
 
     try {
       await createConstituency.mutateAsync({
-        province,
+        province: provinceId,
         zoneNumber: parseInt(zone),
-      });
-      setIsOpen(false);
-      setProvince("");
-      setZone("");
-      refetch();
+      })
+      setIsOpen(false)
+      setProvinceId('')
+      setZone('')
+      refetch()
     } catch {
       // Error handled in hook already
     }
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("ยืนยันลบเขตเลือกตั้งนี้?")) return;
+    if (!confirm('ยืนยันลบเขตเลือกตั้งนี้?')) return
     try {
-      await deleteConstituency.mutateAsync(id);
-      refetch();
+      await deleteConstituency.mutateAsync(id)
+      refetch()
     } catch {
       // Error handled in hook
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">
+    <div className='space-y-6'>
+      <div className='flex justify-between items-center'>
+        <h2 className='text-3xl font-bold tracking-tight'>
           จัดการเขตเลือกตั้ง
         </h2>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog
+          open={isOpen}
+          onOpenChange={setIsOpen}
+        >
           <DialogTrigger asChild>
             <Button>
-              <Plus className="mr-2 h-4 w-4" /> เพิ่มเขตเลือกตั้ง
+              <Plus className='mr-2 h-4 w-4' /> เพิ่มเขตเลือกตั้ง
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -189,28 +187,46 @@ function ConstituenciesPageContent() {
               <DialogTitle>เพิ่มเขตเลือกตั้งใหม่</DialogTitle>
               <DialogDescription>ระบุจังหวัดและหมายเลขเขต</DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="province" className="text-right">
+            <div className='grid gap-4 py-4'>
+              <div className='grid grid-cols-4 items-center gap-4'>
+                <Label
+                  htmlFor='province'
+                  className='text-right'
+                >
                   จังหวัด
                 </Label>
-                <Input
-                  id="province"
-                  value={province}
-                  onChange={(e) => setProvince(e.target.value)}
-                  className="col-span-3"
-                />
+                <Select
+                  value={provinceId}
+                  onValueChange={setProvinceId}
+                >
+                  <SelectTrigger className='col-span-3 w-full'>
+                    <SelectValue placeholder='เลือกจังหวัด' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {provinces?.map((p) => (
+                      <SelectItem
+                        key={p.id}
+                        value={p.id.toString()}
+                      >
+                        {p.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="zone" className="text-right">
+              <div className='grid grid-cols-4 items-center gap-4'>
+                <Label
+                  htmlFor='zone'
+                  className='text-right'
+                >
                   เขตที่
                 </Label>
                 <Input
-                  id="zone"
-                  type="number"
+                  id='zone'
+                  type='number'
                   value={zone}
                   onChange={(e) => setZone(e.target.value)}
-                  className="col-span-3"
+                  className='col-span-3'
                 />
               </div>
             </div>
@@ -219,50 +235,55 @@ function ConstituenciesPageContent() {
                 onClick={handleCreate}
                 disabled={createConstituency.isPending}
               >
-                {createConstituency.isPending ? "กำลังบันทึก..." : "บันทึก"}
+                {createConstituency.isPending ? 'กำลังบันทึก...' : 'บันทึก'}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="flex flex-wrap items-center gap-4 bg-white p-4 rounded-lg border">
-        <div className="flex items-center space-x-2">
-          <span className="text-sm font-medium">จังหวัด:</span>
+      <div className='flex flex-wrap items-center gap-4 bg-white p-4 rounded-lg border'>
+        <div className='flex items-center space-x-2'>
+          <span className='text-sm font-medium'>จังหวัด:</span>
           <Select
             value={filterProvince}
             onValueChange={handleFilterProvinceChange}
           >
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="ทั้งหมด" />
+            <SelectTrigger className='w-[200px]'>
+              <SelectValue placeholder='ทั้งหมด' />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">ทั้งหมด</SelectItem>
-              {provinces.map((p) => (
-                <SelectItem key={p} value={p}>
-                  {p}
+              <SelectItem value='all'>ทั้งหมด</SelectItem>
+              {provinces?.map((p) => (
+                <SelectItem
+                  key={p.id}
+                  value={p.id.toString()}
+                >
+                  {p.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="flex-1" />
+        <div className='flex-1' />
 
-        <div className="text-sm text-muted-foreground">
+        <div className='text-sm text-muted-foreground'>
           ทั้งหมด {meta.total} เขต
         </div>
       </div>
 
-      <div className="border rounded-md">
+      <div className='border rounded-md bg-white'>
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>จังหวัด</TableHead>
-              <TableHead>เขตที่</TableHead>
-              <TableHead>สถานะ</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className='rounded-md bg-slate-50 hover:bg-slate-50'>
+              <TableHead className='rounded-md w-[80px] text-center'>
+                ID
+              </TableHead>
+              <TableHead className='text-center'>จังหวัด</TableHead>
+              <TableHead className='text-center'>เขต</TableHead>
+              <TableHead className='text-center'>สถานะ</TableHead>
+              <TableHead className='text-center w-[100px]'>จัดการ</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -270,7 +291,7 @@ function ConstituenciesPageContent() {
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="text-center h-24 text-muted-foreground"
+                  className='text-center h-24 text-muted-foreground'
                 >
                   กำลังโหลด...
                 </TableCell>
@@ -279,32 +300,46 @@ function ConstituenciesPageContent() {
               <TableRow>
                 <TableCell
                   colSpan={5}
-                  className="text-center h-24 text-muted-foreground"
+                  className='text-center h-24 text-muted-foreground'
                 >
                   ไม่พบข้อมูล
                 </TableCell>
               </TableRow>
             ) : (
               constituencies.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell>{c.id}</TableCell>
-                  <TableCell>{c.province}</TableCell>
-                  <TableCell>{c.zone_number}</TableCell>
-                  <TableCell>
+                <TableRow
+                  key={c.id}
+                  className='hover:bg-slate-50'
+                >
+                  <TableCell className='font-mono text-center text-muted-foreground'>
+                    {c.id}
+                  </TableCell>
+                  <TableCell className='text-center font-medium'>
+                    {c.province}
+                  </TableCell>
+                  <TableCell className='text-center'>
+                    เขตที่ {c.zone_number}
+                  </TableCell>
+                  <TableCell className='text-center'>
                     {c.is_poll_open ? (
-                      <span className="text-green-600 font-bold">เปิด</span>
+                      <span className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700'>
+                        เปิด
+                      </span>
                     ) : (
-                      <span className="text-red-600">ปิด</span>
+                      <span className='inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700'>
+                        ปิด
+                      </span>
                     )}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className='text-center'>
                     <Button
-                      variant="ghost"
-                      size="icon"
+                      variant='ghost'
+                      size='icon'
+                      className='h-8 w-8 hover:bg-red-50'
                       onClick={() => handleDelete(c.id)}
                       disabled={deleteConstituency.isPending}
                     >
-                      <Trash className="h-4 w-4 text-red-500" />
+                      <Trash className='h-4 w-4 text-red-500' />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -324,5 +359,5 @@ function ConstituenciesPageContent() {
         onItemsPerPageChange={handleItemsPerPageChange}
       />
     </div>
-  );
+  )
 }

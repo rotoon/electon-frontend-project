@@ -37,7 +37,7 @@ export default function PortalPage() {
       description: 'จัดการข้อมูลผู้ใช้และการตั้งค่าระบบ',
       icon: ShieldAlert,
       href: '/admin/dashboard',
-      color: 'bg-red-50 hover:bg-red-100 border-red-200 text-red-700',
+      color: 'bg-red-100 border-red-200 text-red-700',
       iconColor: 'text-red-600',
     },
     {
@@ -46,7 +46,7 @@ export default function PortalPage() {
       description: 'จัดการการเลือกตั้งและตรวจสอบผู้สมัคร',
       icon: Briefcase,
       href: '/ec/dashboard',
-      color: 'bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700',
+      color: 'bg-blue-100 border-blue-200 text-blue-700',
       iconColor: 'text-blue-600',
     },
     {
@@ -55,7 +55,7 @@ export default function PortalPage() {
       description: 'ลงคะแนนเสียงและดูข้อมูลการเลือกตั้ง',
       icon: Vote,
       href: '/vote',
-      color: 'bg-green-50 hover:bg-green-100 border-green-200 text-green-700',
+      color: 'bg-green-100 border-green-200 text-green-700',
       iconColor: 'text-green-600',
     },
   ]
@@ -118,7 +118,7 @@ export default function PortalPage() {
 
         <div className='text-center pt-8'>
           <Button
-            variant='ghost'
+            variant='outline'
             onClick={() => router.push('/auth/logout')}
             className='text-muted-foreground'
           >

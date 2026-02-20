@@ -1,5 +1,6 @@
 'use client'
 
+import { Input } from '@/components/ui/input'
 import { PaginationBar } from '@/components/shared/pagination-bar'
 import {
   Select,
@@ -16,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { RoleBadgeList } from '@/components/ui/role-badge'
 import { useManageUsers, useUpdateUserRoleMutation } from '@/hooks/use-users'
 import { formatCitizenId } from '@/lib/utils'
 import { User } from '@/types/user'
@@ -25,23 +25,26 @@ import { th } from 'date-fns/locale'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Suspense, useCallback, useEffect, useState } from 'react'
 
-const ROLE_OPTIONS = [
-  { value: 'all', label: 'ทั้งหมด' },
-  { value: 'voter', label: 'Voter' },
-  { value: 'ec', label: 'EC Member' },
-  { value: 'admin', label: 'Admin' },
-]
+function getPrimaryRole(roles: string[]): string {
+  if (roles.includes('ROLE_ADMIN')) return 'ROLE_ADMIN'
+  if (roles.includes('ROLE_EC')) return 'ROLE_EC'
+  return 'ROLE_VOTER'
+}
 
-export default function ManageUsersPage() {
-  return (
-    <Suspense fallback={<UsersPageSkeleton />}>
-      <UsersPageContent />
-    </Suspense>
-  )
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+    return () => clearTimeout(handler)
+  }, [value, delay])
+
+  return debouncedValue
 }
 
 function UsersPageSkeleton() {
-  // ... existing skeleton code ...
   return (
     <div className='space-y-6'>
       <div className='flex justify-between items-center'>
@@ -68,7 +71,7 @@ function UsersPageContent() {
   const searchParams = useSearchParams()
 
   const [filterRole, setFilterRole] = useState<string>(
-    searchParams.get('role') || 'all',
+    searchParams.get('search') || '',
   )
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get('page') || '1'),
@@ -79,7 +82,7 @@ function UsersPageContent() {
 
   const updateURL = useCallback(() => {
     const params = new URLSearchParams()
-    if (filterRole !== 'all') params.set('role', filterRole)
+    if (filterRole) params.set('search', filterRole)
     if (currentPage !== 1) params.set('page', currentPage.toString())
     if (itemsPerPage !== 10) params.set('limit', itemsPerPage.toString())
 
@@ -93,8 +96,11 @@ function UsersPageContent() {
     updateURL()
   }, [updateURL])
 
+  // Debounce search
+  const debouncedSearch = useDebounce(filterRole, 500)
+
   const { data, isLoading } = useManageUsers({
-    role: filterRole,
+    role: debouncedSearch,
     page: currentPage,
     limit: itemsPerPage,
   })
@@ -135,27 +141,16 @@ function UsersPageContent() {
       </div>
 
       <div className='flex flex-wrap items-center gap-4 bg-white p-4 rounded-lg border'>
-        {/* Filter Role */}
+        {/* Search */}
         <div className='flex items-center space-x-2'>
-          <span className='text-sm font-medium'>ประเภท:</span>
-          <Select
+          <span className='text-sm font-medium'>ค้นหา:</span>
+          <Input
+            type='text'
+            placeholder='ชื่อ, นามสกุล, เลขบัตร...'
             value={filterRole}
-            onValueChange={handleFilterRoleChange}
-          >
-            <SelectTrigger className='w-[150px]'>
-              <SelectValue placeholder='ทั้งหมด' />
-            </SelectTrigger>
-            <SelectContent>
-              {ROLE_OPTIONS.map((opt) => (
-                <SelectItem
-                  key={opt.value}
-                  value={opt.value}
-                >
-                  {opt.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            onChange={(e) => handleFilterRoleChange(e.target.value)}
+            className='w-[250px]'
+          />
         </div>
       </div>
 
@@ -163,8 +158,8 @@ function UsersPageContent() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className='text-center'>ลำดับ</TableHead>
               <TableHead>ชื่อ-นามสกุล</TableHead>
-              {/* Removed Email as strict docs don't have it */}
               <TableHead>เลขบัตรประชาชน</TableHead>
               <TableHead>ที่อยู่</TableHead>
               <TableHead>Role</TableHead>
@@ -191,32 +186,34 @@ function UsersPageContent() {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((u: User) => (
+              users.map((u: User, index) => (
                 <TableRow key={u.id}>
-                  <TableCell>
+                  <TableCell className='text-center'>
+                    {index + 1 + Number(currentPage - 1) * Number(itemsPerPage)}
+                  </TableCell>
+                  <TableCell className='font-medium'>
                     {u.firstName} {u.lastName}
                   </TableCell>
-                  <TableCell>{formatCitizenId(u.citizenId)}</TableCell>
-                  <TableCell>
-                    {u.province?.name} {u.district?.name}
+                  <TableCell className='font-mono text-muted-foreground'>
+                    {formatCitizenId(u.citizenId)}
+                  </TableCell>
+                  <TableCell className='text-muted-foreground'>
+                    {u.address || '-'}
                   </TableCell>
                   <TableCell>
-                    <div className='flex flex-col gap-2'>
-                      <RoleBadgeList roles={u.roles} />
-                      <Select
-                        defaultValue={u.roles[0] || 'ROLE_VOTER'}
-                        onValueChange={(val) => handleRoleChange(u.id, val)}
-                      >
-                        <SelectTrigger className='w-[140px] h-8 text-xs'>
-                          <SelectValue placeholder='เปลี่ยนสิทธิ์' />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value='ROLE_VOTER'>Voter</SelectItem>
-                          <SelectItem value='ROLE_EC'>EC Member</SelectItem>
-                          <SelectItem value='ROLE_ADMIN'>Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    <Select
+                      value={getPrimaryRole(u.roles)}
+                      onValueChange={(val) => handleRoleChange(u.id, val)}
+                    >
+                      <SelectTrigger className='w-[140px]'>
+                        <SelectValue placeholder='เลือกสิทธิ์' />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value='ROLE_VOTER'>Voter</SelectItem>
+                        <SelectItem value='ROLE_EC'>EC Member</SelectItem>
+                        <SelectItem value='ROLE_ADMIN'>Admin</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </TableCell>
                   <TableCell>
                     {u.createdAt
@@ -241,5 +238,13 @@ function UsersPageContent() {
         onItemsPerPageChange={handleItemsPerPageChange}
       />
     </div>
+  )
+}
+
+export default function ManageUsersPage() {
+  return (
+    <Suspense fallback={<UsersPageSkeleton />}>
+      <UsersPageContent />
+    </Suspense>
   )
 }

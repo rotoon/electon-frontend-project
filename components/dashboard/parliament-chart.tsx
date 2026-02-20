@@ -18,6 +18,8 @@ interface ParliamentChartProps {
 const ParliamentChartContent = memo(function ParliamentChartContent({
   data,
 }: ParliamentChartProps) {
+  // Placeholder - chart not yet implemented
+  void data
   return (
     <div className="h-[300px] flex items-center justify-center text-slate-400 bg-slate-50 rounded-lg">
       Loading Chart…

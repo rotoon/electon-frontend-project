@@ -18,9 +18,9 @@ export function transformConstituency(
 ): TransformedConstituency {
   return {
     id: c.id,
-    province: c.province,
-    zone_number: c.zoneNumber,
-    is_poll_open: c.isPollOpen,
+    province: c.province?.name || `จังหวัด ${c.provinceId}`,
+    zone_number: c.number,
+    is_poll_open: !c.isClosed,
   }
 }
 

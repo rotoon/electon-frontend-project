@@ -6,11 +6,11 @@ export interface User {
   firstName: string
   lastName: string
   address: string
-  province: Province
-  district: District
-  constituency: Constituency
+  province?: Province
+  district?: District
+  constituency?: Constituency
   roles: string[]
-  createdAt: string
+  createdAt?: string
 }
 
 export interface ManageUsersResult {
@@ -29,9 +29,10 @@ export interface ApiUser {
   nationalId?: string
   firstName: string
   lastName: string
-  address: string
-  province: { id: number; name: string }
-  district: { id: number; name: string }
-  roles: string[]
-  createdAt: string
+  address?: string
+  province?: { id: number; name: string }
+  district?: { id: number; name: string }
+  constituency?: { id: number; number: number } | null
+  roles: { role: { id: number; name: string } }[]
+  createdAt?: string
 }

@@ -61,23 +61,32 @@ export function useAdminConstituencies(params: {
   return useQuery<ManageConstituenciesResult>({
     queryKey: ['admin-constituencies', province, page, limit],
     queryFn: async () => {
-      const queryParams = new URLSearchParams()
-      queryParams.set('page', page.toString())
-      queryParams.set('limit', limit.toString())
+      // Fetch all data without pagination (backend may not support it)
+      const { data } = await api.get('/admin/constituencies?limit=1000')
 
+      // Backend returns array directly
+      const allData = Array.isArray(data) ? data : (data.data || [])
+      
+      // Filter by provinceId if provided
+      let filteredData = allData
       if (province && province !== 'all') {
-        queryParams.set('province', province)
+        filteredData = allData.filter((c: { provinceId: number }) => 
+          c.provinceId === parseInt(province)
+        )
       }
 
-      const { data } = await api.get(
-        `/admin/constituencies?${queryParams.toString()}`,
-      )
+      // Client-side pagination
+      const total = filteredData.length
+      const totalPages = Math.ceil(total / limit)
+      const start = (page - 1) * limit
+      const paginatedData = filteredData.slice(start, start + limit)
 
-      const rawData = data.data || []
-      const meta = data.meta || { total: 0, page: 1, limit: 10, totalPages: 1 }
-      const constituencies = transformConstituencies(rawData) as Constituency[]
+      const constituencies = transformConstituencies(paginatedData) as Constituency[]
 
-      return { constituencies, meta }
+      return { 
+        constituencies, 
+        meta: { total, page, limit, totalPages } 
+      }
     },
   })
 }
@@ -147,7 +156,10 @@ export function useCreateConstituencyMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: { province: string; zoneNumber: number }) => {
-      await api.post('/admin/constituencies', payload)
+      await api.post('/admin/constituencies', {
+        number: payload.zoneNumber,
+        provinceId: parseInt(payload.province),
+      })
     },
     onSuccess: () => {
       toast.success('เพิ่มเขตเลือกตั้งสำเร็จ')

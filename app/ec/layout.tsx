@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 
 export default function ECLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const { user, setUser } = useAuthStore()
+  const { setUser } = useAuthStore()
 
   const handleLogout = async () => {
     try {
