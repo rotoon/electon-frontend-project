@@ -1,22 +1,16 @@
 'use client'
 
 import { SidebarLayout } from '@/components/shared/sidebar-layout'
-import api from '@/lib/api'
 import { useAuthStore } from '@/store/useAuthStore'
 import { Flag, LayoutDashboard, Settings2, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function ECLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
-  const { setUser } = useAuthStore()
+  const { logout } = useAuthStore()
 
   const handleLogout = async () => {
-    try {
-      await api.post('/auth/logout')
-    } catch {
-      // Ignore error if logout fails
-    }
-    setUser(null)
+    logout()
     router.push('/auth')
   }
 

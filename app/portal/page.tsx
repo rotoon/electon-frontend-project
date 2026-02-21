@@ -18,8 +18,13 @@ import { useEffect } from 'react'
 
 export default function PortalPage() {
   const router = useRouter()
-  const { user, isAuthenticated, _hasHydrated } = useAuthStore()
+  const { user, isAuthenticated, _hasHydrated, logout } = useAuthStore()
   const { roles } = usePermission()
+
+  const handleLogout = async () => {
+    logout()
+    router.push('/auth')
+  }
 
   useEffect(() => {
     if (_hasHydrated && !isAuthenticated) {
@@ -119,7 +124,7 @@ export default function PortalPage() {
         <div className='text-center pt-8'>
           <Button
             variant='outline'
-            onClick={() => router.push('/auth/logout')}
+            onClick={() => handleLogout()}
             className='text-muted-foreground'
           >
             ออกจากระบบ
