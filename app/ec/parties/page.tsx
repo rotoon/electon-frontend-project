@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
@@ -9,9 +9,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Table,
   TableBody,
@@ -19,267 +19,353 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/table'
+import { Textarea } from '@/components/ui/textarea'
 import {
   useCreatePartyMutation,
   useDeletePartyMutation,
   useParties,
   useUpdatePartyMutation,
-} from "@/hooks/use-parties";
-import { type Party } from "@/types";
-import { Edit, Image as ImageIcon, Plus, Trash } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+} from '@/hooks/use-parties'
+import { type Party } from '@/types'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  Edit,
+  Image as ImageIcon,
+  Plus,
+  Trash,
+  LayoutGrid,
+  Search,
+} from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 
 export default function ManagePartiesPage() {
-  const { data: parties, isLoading } = useParties();
-  const createParty = useCreatePartyMutation();
-  const updateParty = useUpdatePartyMutation();
-  const deleteParty = useDeletePartyMutation();
+  const { data: parties, isLoading } = useParties()
+  const createParty = useCreatePartyMutation()
+  const updateParty = useUpdatePartyMutation()
+  const deleteParty = useDeletePartyMutation()
 
-  const [isOpen, setIsOpen] = useState(false);
-  const [isEdit, setIsEdit] = useState(false);
+  const [isOpen, setIsOpen] = useState(false)
+  const [isEdit, setIsEdit] = useState(false)
 
   // Form state
-  const [currentId, setCurrentId] = useState<number | null>(null);
-  const [name, setName] = useState("");
-  const [logoUrl, setLogoUrl] = useState("");
-  const [policy, setPolicy] = useState("");
-  const [color, setColor] = useState("#000000");
+  const [currentId, setCurrentId] = useState<number | null>(null)
+  const [name, setName] = useState('')
+  const [logoUrl, setLogoUrl] = useState('')
+  const [policy, setPolicy] = useState('')
 
   const resetForm = () => {
-    setName("");
-    setLogoUrl("");
-    setPolicy("");
-    setColor("#000000");
-    setCurrentId(null);
-    setIsEdit(false);
-  };
+    setName('')
+    setLogoUrl('')
+    setPolicy('')
+    setCurrentId(null)
+    setIsEdit(false)
+  }
 
   const handleEdit = (party: Party) => {
-    setName(party.name);
-    setLogoUrl(party.logo_url || "");
-    setPolicy(party.policy || "");
-    setColor(party.color || "#000000");
-    setCurrentId(party.id);
-    setIsEdit(true);
-    setIsOpen(true);
-  };
+    setName(party.name)
+    setLogoUrl(party.logo_url || '')
+    setPolicy(party.policy || '')
+    setCurrentId(party.id)
+    setIsEdit(true)
+    setIsOpen(true)
+  }
 
   const handleSubmit = async () => {
     if (!name) {
-      toast.error("กรุณาระบุชื่อพรรค");
-      return;
+      toast.error('กรุณาระบุชื่อพรรค')
+      return
     }
 
     const payload = {
       name,
       logo_url: logoUrl,
       policy,
-      color,
-    };
+    }
 
     try {
       if (isEdit && currentId) {
-        await updateParty.mutateAsync({ id: currentId, payload });
+        await updateParty.mutateAsync({ id: currentId, payload })
       } else {
-        await createParty.mutateAsync(payload);
+        await createParty.mutateAsync(payload)
       }
-      setIsOpen(false);
-      resetForm();
+      setIsOpen(false)
+      resetForm()
     } catch {
       // Error handled in hook
     }
-  };
+  }
 
   const handleDelete = async (id: number) => {
-    if (!confirm("ยืนยันลบพรรคการเมืองนี้?")) return;
+    if (!confirm('ยืนยันลบพรรคการเมืองนี้?')) return
     try {
-      await deleteParty.mutateAsync(id);
+      await deleteParty.mutateAsync(id)
     } catch {
       // Error handled in hook
     }
-  };
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">
-          จัดการพรรคการเมือง
-        </h2>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className='space-y-8 p-1'
+    >
+      <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-6'>
+        <div>
+          <h2 className='text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent'>
+            จัดการพรรคการเมือง
+          </h2>
+          <p className='text-muted-foreground mt-1'>
+            บริหารจัดการข้อมูลพรรคการเมือง นโยบาย และสัญลักษณ์
+          </p>
+        </div>
         <Dialog
           open={isOpen}
           onOpenChange={(open) => {
-            setIsOpen(open);
-            if (!open) resetForm();
+            setIsOpen(open)
+            if (!open) resetForm()
           }}
         >
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" /> เพิ่มพรรคการเมือง
+            <Button className='shadow-lg hover:shadow-xl transition-all duration-300 gap-2 bg-blue-600 hover:bg-blue-700'>
+              <Plus className='h-4 w-4' />
+              <span>เพิ่มพรรคการเมือง</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
-            <DialogHeader>
-              <DialogTitle>
-                {isEdit ? "แก้ไขพรรคการเมือง" : "เพิ่มพรรคการเมือง"}
+          <DialogContent className='sm:max-w-[600px] overflow-hidden rounded-xl border-none shadow-2xl'>
+            <DialogHeader className='bg-slate-50 -mx-6 -mt-6 p-6 border-b'>
+              <DialogTitle className='text-xl'>
+                {isEdit ? 'แก้ไขพรรคการเมือง' : 'เพิ่มพรรคการเมือง'}
               </DialogTitle>
               <DialogDescription>
-                กำหนดชื่อ นโยบาย และสัญลักษณ์ของพรรค
+                กำหนดข้อมูลพื้นฐาน และนโยบายหลักของพรรค
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  ชื่อพรรค
-                </Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="col-span-3"
-                  placeholder="เช่น พรรคใจดี"
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="logo" className="text-right">
-                  Logo URL
-                </Label>
-                <Input
-                  id="logo"
-                  value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  className="col-span-3"
-                  placeholder="https://..."
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="color" className="text-right">
-                  สีประจำพรรค
-                </Label>
-                <div className="col-span-3 flex items-center gap-2">
-                  <Input
-                    id="color"
-                    type="color"
-                    value={color}
-                    onChange={(e) => setColor(e.target.value)}
-                    className="w-20 h-10 p-1"
-                  />
-                  <span className="text-sm text-muted-foreground">{color}</span>
+            <div className='grid gap-6 py-6'>
+              <div className='flex flex-col lg:flex-row gap-6'>
+                <div className='flex-1 space-y-4'>
+                  <div className='space-y-2'>
+                    <Label
+                      htmlFor='name'
+                      className='text-sm font-semibold'
+                    >
+                      ชื่อพรรค
+                    </Label>
+                    <Input
+                      id='name'
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder='เช่น พรรคใจดี'
+                      className='bg-slate-50/50 focus:bg-white transition-colors'
+                    />
+                  </div>
+                  <div className='space-y-2'>
+                    <Label
+                      htmlFor='logo'
+                      className='text-sm font-semibold'
+                    >
+                      โลโก้พรรค (URL)
+                    </Label>
+                    <Input
+                      id='logo'
+                      value={logoUrl}
+                      onChange={(e) => setLogoUrl(e.target.value)}
+                      placeholder='https://...'
+                      className='bg-slate-50/50 focus:bg-white transition-colors'
+                    />
+                  </div>
+                </div>
+
+                <div className='flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30 w-full lg:w-40 h-40'>
+                  {logoUrl ? (
+                    <img
+                      src={logoUrl}
+                      alt='Preview'
+                      className='w-full h-full object-contain rounded-md'
+                      onError={(e) => {
+                        ;(e.target as any).src =
+                          'https://placehold.co/160?text=Invalid+URL'
+                      }}
+                    />
+                  ) : (
+                    <div className='flex flex-col items-center text-slate-400'>
+                      <ImageIcon className='w-10 h-10 mb-2' />
+                      <span className='text-[10px] uppercase font-bold tracking-wider'>
+                        Logo Preview
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
-              <div className="grid grid-cols-4 gap-4">
-                <Label htmlFor="policy" className="text-right mt-2">
-                  นโยบาย
+
+              <div className='space-y-2'>
+                <Label
+                  htmlFor='policy'
+                  className='text-sm font-semibold'
+                >
+                  นโยบายของพรรค
                 </Label>
                 <Textarea
-                  id="policy"
+                  id='policy'
                   value={policy}
                   onChange={(e) => setPolicy(e.target.value)}
-                  className="col-span-3"
-                  rows={4}
-                  placeholder="นโยบายหลักของพรรค..."
+                  className='min-h-[120px] bg-slate-50/50 focus:bg-white transition-colors'
+                  placeholder='ระบุรายละเอียดนโยบายหลักของพรรค...'
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className='bg-slate-50 -mx-6 -mb-6 p-6 border-t'>
+              <Button
+                variant='ghost'
+                onClick={() => setIsOpen(false)}
+                className='mr-auto'
+              >
+                ยกเลิก
+              </Button>
               <Button
                 onClick={handleSubmit}
                 disabled={createParty.isPending || updateParty.isPending}
+                className='min-w-[120px] bg-blue-600 hover:bg-blue-700 shadow-md'
               >
                 {createParty.isPending || updateParty.isPending
-                  ? "กำลังบันทึก..."
+                  ? 'กำลังบันทึก...'
                   : isEdit
-                    ? "บันทึกการแก้ไข"
-                    : "บันทึก"}
+                    ? 'บันทึกการแก้ไข'
+                    : 'บันทึกข้อมูล'}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="border rounded-md">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-[80px]">Logo</TableHead>
-              <TableHead>ชื่อพรรค</TableHead>
-              <TableHead>สี</TableHead>
-              <TableHead>นโยบาย (ย่อ)</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center h-24 text-muted-foreground"
-                >
-                  กำลังโหลด...
-                </TableCell>
-              </TableRow>
-            ) : !parties || parties.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center h-24 text-muted-foreground"
-                >
-                  ไม่พบข้อมูลพรรคการเมือง
-                </TableCell>
-              </TableRow>
-            ) : (
-              parties.map((p: Party) => (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    {p.logo_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={p.logo_url}
-                        alt={p.name}
-                        className="w-10 h-10 object-contain rounded-md bg-neutral-100"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 bg-neutral-200 rounded-md flex items-center justify-center">
-                        <ImageIcon className="w-5 h-5 text-neutral-400" />
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="font-medium">{p.name}</TableCell>
-                  <TableCell>
-                    <div
-                      className="w-6 h-6 rounded-full border"
-                      style={{ backgroundColor: p.color || "#000000" }}
-                      title={p.color || "#000000"}
-                    />
-                  </TableCell>
-                  <TableCell className="max-w-[300px] truncate text-muted-foreground">
-                    {p.policy}
-                  </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleEdit(p)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                      onClick={() => handleDelete(p.id)}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+      <Card className='border-none shadow-xl bg-white/50 backdrop-blur-sm overflow-hidden'>
+        <CardContent className='p-0'>
+          <div className='overflow-x-auto'>
+            <Table>
+              <TableHeader className='bg-slate-50/80'>
+                <TableRow className='hover:bg-transparent border-slate-100'>
+                  <TableHead className='w-[100px] font-bold text-slate-700 px-6 py-4'>
+                    สัญลักษณ์
+                  </TableHead>
+                  <TableHead className='font-bold text-slate-700 px-6'>
+                    ชื่อพรรคการเมือง
+                  </TableHead>
+                  <TableHead className='font-bold text-slate-700 px-6'>
+                    นโยบายที่สำคัญ
+                  </TableHead>
+                  <TableHead className='text-right font-bold text-slate-700 px-6'>
+                    การจัดการ
+                  </TableHead>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
-  );
+              </TableHeader>
+              <TableBody>
+                <AnimatePresence mode='wait'>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className='h-40 text-center'
+                      >
+                        <div className='flex flex-col items-center justify-center space-y-3'>
+                          <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
+                          <p className='text-slate-500 font-medium'>
+                            กำลังโหลดข้อมูล...
+                          </p>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : !parties || parties.length === 0 ? (
+                    <TableRow>
+                      <TableCell
+                        colSpan={4}
+                        className='h-60 text-center'
+                      >
+                        <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic'>
+                          <div className='p-4 bg-slate-50 rounded-full'>
+                            <LayoutGrid className='w-12 h-12 text-slate-200' />
+                          </div>
+                          <div>
+                            <p className='text-lg font-semibold text-slate-500'>
+                              ไม่พบข้อมูลพรรคการเมือง
+                            </p>
+                            <p className='text-sm'>
+                              เริ่มต้นด้วยการเพิ่มพรรคการเมืองใหม่ที่ปุ่มด้านบน
+                            </p>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    parties.map((p: Party, index: number) => (
+                      <motion.tr
+                        key={p.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className='group hover:bg-slate-50/50 transition-colors border-slate-50'
+                      >
+                        <TableCell className='px-6 py-4'>
+                          {p.logo_url ? (
+                            <img
+                              src={p.logo_url}
+                              alt={p.name}
+                              className='w-12 h-12 object-contain rounded-lg p-1 bg-white shadow-sm ring-1 ring-slate-100 group-hover:scale-110 transition-transform duration-300'
+                            />
+                          ) : (
+                            <div className='w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400'>
+                              <ImageIcon className='w-6 h-6' />
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className='px-6'>
+                          <div className='flex flex-col'>
+                            <span className='font-bold text-slate-900 group-hover:text-blue-700 transition-colors'>
+                              {p.name}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className='px-6'>
+                          <div className='max-w-[400px] text-slate-600 line-clamp-2 leading-relaxed text-sm bg-slate-100/50 p-2 rounded-lg group-hover:bg-white transition-colors'>
+                            {p.policy || (
+                              <span className='italic opacity-50 font-light'>
+                                ยังไม่ได้ระบุนโยบาย
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className='px-6 text-right'>
+                          <div className='flex justify-end gap-2'>
+                            <Button
+                              variant='outline'
+                              size='icon'
+                              className='rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all active:scale-95'
+                              onClick={() => handleEdit(p)}
+                            >
+                              <Edit className='h-4 w-4' />
+                            </Button>
+                            <Button
+                              variant='ghost'
+                              size='icon'
+                              className='rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all active:scale-95'
+                              onClick={() => handleDelete(p.id)}
+                            >
+                              <Trash className='h-4 w-4' />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </motion.tr>
+                    ))
+                  )}
+                </AnimatePresence>
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  )
 }

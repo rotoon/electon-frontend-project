@@ -40,7 +40,6 @@ export interface TransformedCandidate {
     id: number
     name: string
     logo_url: string
-    color: string
     policy?: string
   } | null
 }
@@ -56,7 +55,6 @@ export function transformCandidate(c: ApiCandidate): TransformedCandidate {
           id: c.party.id,
           name: c.party.name,
           logo_url: c.party.logoUrl,
-          color: c.party.color,
           policy: c.party.policy,
         }
       : null,
@@ -76,7 +74,6 @@ export interface TransformedParty {
   logoUrl: string
   logo_url: string
   policy: string
-  color: string
 }
 
 export function transformParty(p: ApiParty): TransformedParty {
@@ -86,7 +83,6 @@ export function transformParty(p: ApiParty): TransformedParty {
     logoUrl: p.logoUrl || '',
     logo_url: p.logoUrl || '',
     policy: p.policy || '',
-    color: p.color || '',
   }
 }
 

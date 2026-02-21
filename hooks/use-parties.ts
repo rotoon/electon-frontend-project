@@ -17,7 +17,6 @@ export function usePartyStats() {
         logoUrl: p.logoUrl,
         logo_url: p.logoUrl,
         policy: p.policy,
-        color: p.color,
         mpCount: 0, // Placeholder
       }))
     },
@@ -30,7 +29,7 @@ export function useParties() {
     queryKey: ['parties'],
     queryFn: async () => {
       const { data } = await api.get('/ec/parties?limit=1000')
-      return transformParties(data.data || []) as Party[]
+      return transformParties(data.data?.data || []) as Party[]
     },
   })
 }
@@ -43,7 +42,6 @@ export function useCreatePartyMutation() {
         name: payload.name,
         logoUrl: payload.logo_url,
         policy: payload.policy,
-        color: payload.color,
       }
       await api.post('/ec/parties', apiPayload)
     },
@@ -74,7 +72,6 @@ export function useUpdatePartyMutation() {
         name: payload.name,
         logoUrl: payload.logo_url,
         policy: payload.policy,
-        color: payload.color,
       }
       await api.put(`/ec/parties/${id}`, apiPayload)
     },

@@ -21,12 +21,10 @@ export interface ApiPartyItem {
   name: string
   logoUrl: string | null
   policy: string | null
-  color: string | null
 }
 
 export interface PartyPayload {
   name: string
   logo_url: string
   policy: string
-  color: string
 }

@@ -26,7 +26,6 @@ export interface ApiPartyInCandidate {
   id: number
   name: string
   logoUrl: string
-  color: string
   policy?: string
 }
 
@@ -35,7 +34,6 @@ export interface ApiParty {
   name: string
   logoUrl: string | null
   policy: string | null
-  color: string | null
 }
 
 export interface ApiError {
