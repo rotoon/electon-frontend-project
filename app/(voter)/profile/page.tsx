@@ -52,11 +52,13 @@ export default function ProfilePage() {
             </h1>
             <p className='text-blue-100 text-sm mt-1'>
               สมาชิกตั้งแต่{' '}
-              {new Date(user.createdAt).toLocaleDateString('th-TH', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
+              {user.createdAt
+                ? new Date(user.createdAt).toLocaleDateString('th-TH', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })
+                : '-'}
             </p>
           </div>
         </div>

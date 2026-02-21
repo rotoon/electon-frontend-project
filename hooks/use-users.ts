@@ -43,30 +43,19 @@ export function useManageUsers(params: {
   return useQuery<ManageUsersResult>({
     queryKey: ['manage-users', role, page, limit],
     queryFn: async () => {
-      // Fetch all users for client-side pagination
-      const { data } = await api.get('/users?limit=1000')
+      // Server-side pagination and filtering
+      const { data } = await api.get('/users', {
+        params: {
+          page,
+          limit,
+          search: role && role.trim() ? role.trim() : undefined,
+        },
+      })
 
       // Backend returns { message, total, users: [], page, totalPages }
-      const allData = data.users || []
-      
-      // Filter by search text if provided
-      let filteredData = allData
-      if (role && role.trim()) {
-        const search = role.toLowerCase().trim()
-        filteredData = allData.filter((u: ApiUser) => {
-          const fullName = `${u.firstName || ''} ${u.lastName || ''}`.toLowerCase()
-          const citizenId = u.citizenId || u.nationalId || ''
-          return fullName.includes(search) || citizenId.includes(search)
-        })
-      }
+      const usersData = data.users || []
 
-      // Client-side pagination
-      const total = filteredData.length
-      const totalPages = Math.ceil(total / limit)
-      const start = (page - 1) * limit
-      const paginatedData = filteredData.slice(start, start + limit)
-
-      const users = paginatedData.map((u: ApiUser) => {
+      const users = usersData.map((u: ApiUser) => {
         // Handle roles from API - may be array of { role: { name } } or array of strings
         let roles: string[] = []
         if (Array.isArray(u.roles)) {
@@ -91,7 +80,15 @@ export function useManageUsers(params: {
         }
       })
 
-      return { users, meta: { total, page, limit, totalPages } }
+      return {
+        users,
+        meta: {
+          total: data.total || 0,
+          page: data.page || page,
+          limit: data.limit || limit,
+          totalPages: data.totalPages || 0,
+        },
+      }
     },
   })
 }

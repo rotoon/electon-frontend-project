@@ -5,11 +5,13 @@ import { CandidateCard } from '@/components/vote/candidate-card'
 import { PollStatusBadge } from '@/components/vote/poll-status-badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { VoteConfirmationDialog } from '@/components/vote/vote-confirmation-dialog'
+import { VoteHeader } from '@/components/vote/vote-header'
+import { VoteSkeletonList } from '@/components/vote/vote-skeleton'
 import { useCandidates } from '@/hooks/use-candidates'
 import { useConstituencyStatus } from '@/hooks/use-constituencies'
 import { useMyVote, useVoteMutation } from '@/hooks/use-vote'
 import { useAuthStore } from '@/store/useAuthStore'
-import { Building2, CheckCircle2, MapPin, Vote } from 'lucide-react'
+import { CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { useEffect, useRef, useState, startTransition } from 'react'
 import { toast } from 'sonner'
@@ -87,28 +89,7 @@ export default function VotePage() {
     }
   }, [currentCandidateId])
   if (isLoading) {
-    return (
-      <div className='space-y-6 md:space-y-8 pb-20 md:pb-0'>
-        <div className='bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-100 mb-6 md:mb-8'>
-          <Skeleton className='h-7 w-40 mb-4' />
-          <div className='flex flex-wrap gap-2 md:gap-4'>
-            <Skeleton className='h-6 w-24' />
-            <Skeleton className='h-6 w-24' />
-            <Skeleton className='h-6 w-32' />
-          </div>
-        </div>
-        
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className='bg-white p-4 rounded-xl shadow-sm border border-slate-200'>
-              <Skeleton className='h-48 w-full mb-4' />
-              <Skeleton className='h-5 w-3/4 mb-2' />
-              <Skeleton className='h-4 w-1/2' />
-            </div>
-          ))}
-        </div>
-      </div>
-    )
+    return <VoteSkeletonList />
   }
 
   // Render: Not authenticated
@@ -133,38 +114,10 @@ export default function VotePage() {
       {/* Header */}
       {/* Header - Enriched District Info */}
       {isAuthenticated && (
-        <div className='bg-white p-4 md:p-6 rounded-xl shadow-sm border border-slate-100 mb-6 md:mb-8'>
-          <div className='flex flex-col md:flex-row justify-between md:items-start gap-4'>
-            <div>
-              <h1 className='text-xl md:text-2xl font-bold text-slate-800 mb-3 md:mb-4'>
-                คูหาเลือกตั้งออนไลน์
-              </h1>
-              <div className='flex flex-wrap gap-2 md:gap-x-6 gap-y-3 text-slate-600'>
-                <div className='flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100'>
-                  <MapPin className='w-4 h-4 text-primary' />
-                  <span className='text-sm font-medium'>
-                    จ.{user.province?.name}
-                  </span>
-                </div>
-                <div className='flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100'>
-                  <Building2 className='w-4 h-4 text-primary' />
-                  <span className='text-sm font-medium'>
-                    อ.{user.district?.name}
-                  </span>
-                </div>
-                <div className='flex items-center gap-2 bg-primary/5 px-3 py-1.5 rounded-lg border border-primary/10 w-full md:w-auto mt-2 md:mt-0'>
-                  <Vote className='w-4 h-4 text-primary' />
-                  <span className='text-sm font-bold text-primary'>
-                    เขตเลือกตั้งที่ {user.constituency?.number}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className='mt-2 md:mt-0 flex justify-end'>
-              <PollStatusBadge isOpen={pollOpen} />
-            </div>
-          </div>
-        </div>
+        <VoteHeader
+          user={user}
+          pollOpen={pollOpen}
+        />
       )}
 
       {/* Vote confirmation info */}
