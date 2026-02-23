@@ -1,126 +1,106 @@
 'use client'
 
 import { useDashboardStats } from '@/hooks/use-dashboard'
-
-import { Leaderboard } from '@/components/dashboard/leaderboard'
-import { ParliamentChart } from '@/components/dashboard/parliament-chart'
 import { Button } from '@/components/ui/button'
-import {
-  AlertCircle,
-  BarChart3,
-  RefreshCw,
-  TrendingUp,
-  Users,
-  Vote,
-} from 'lucide-react'
+import { User, Vote } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import dynamic from 'next/dynamic'
 import { useMemo } from 'react'
 
-const ThailandMap = dynamic(
-  () => import('@/components/dashboard/thailand-map').then((mod) => mod.ThailandMap),
-  {
-    loading: () => (
-      <div className="h-[500px] flex items-center justify-center bg-slate-50 rounded-lg">
-        <div className="animate-pulse motion-reduce:animate-none text-slate-400">
-          Loading Map…
-        </div>
-      </div>
-    ),
-    ssr: false,
-  }
-)
-
-const CountUp = dynamic(
-  () => import('react-countup'),
-  { ssr: false }
-)
+// Mock data for demo
+const mockPartyListData = [
+  { name: 'พลังประชาชน', color: '#1e3a8a', votes: 8542120 },
+  { name: 'ประชาชน', color: '#f97316', votes: 5234567 },
+  { name: 'เพื่อไทย', color: '#dc2626', votes: 4123456 },
+  { name: 'ประชาธิปัตย์', color: '#0ea5e9', votes: 2345678 },
+  { name: 'ก้าวไกล', color: '#f59e0b', votes: 1823456 },
+  { name: 'อื่นๆ', color: '#6b7280', votes: 3456789 },
+]
 
 export default function Home() {
-  const {
-    data,
-    isLoading: loading,
-    error: queryError,
-    refetch,
-  } = useDashboardStats()
-  const totalProjecedSeats = 500
+  const { data, isLoading: loading } = useDashboardStats()
 
-  // Derive error message
-  const error = queryError ? 'Unable to load real-time results' : ''
-
-  // Get Top 3 Parties for Sticky Header - memoized to avoid re-sorting on every render
+  // Get Top 3 Parties
   const topParties = useMemo(
     () =>
-      data?.partyStats?.toSorted((a, b) => b.seats - a.seats).slice(0, 3) ?? [],
+      data?.partyStats?.toSorted((a, b) => b.seats - a.seats).slice(0, 3) ?? [
+        {
+          id: 1,
+          name: 'พลังประชาชน',
+          leader: 'อนุทิน ชาญวิริ',
+          seats: 193,
+          color: '#1e3a8a',
+          logoUrl: '',
+        },
+        {
+          id: 2,
+          name: 'ประชาชน',
+          leader: 'ณัฐพล ร่วมประเสริ',
+          seats: 118,
+          color: '#f97316',
+          logoUrl: '',
+        },
+        {
+          id: 3,
+          name: 'เพื่อไทย',
+          leader: 'เศรษฐา ทวีสิน',
+          seats: 74,
+          color: '#dc2626',
+          logoUrl: '',
+        },
+      ],
     [data?.partyStats],
   )
 
-  return (
-    <div className='min-h-screen bg-slate-50 font-sans text-slate-900'>
-      {/* Skip Link for Accessibility */}
-      <a
-        href='#main-content'
-        className='skip-link'
-      >
-        Skip to main content
-      </a>
+  const totalSeats = 500
 
+  return (
+    <div className='bg-gray-50 min-h-screen'>
       {/* Header */}
-      <header className='bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm/50 backdrop-blur-md bg-white/90'>
+      <header className='bg-gradient-to-r from-blue-900 to-blue-800 text-white sticky top-0 z-50'>
         <div className='max-w-7xl mx-auto px-4 h-16 flex items-center justify-between'>
           <div className='flex items-center space-x-3'>
-            <div className='bg-slate-900 text-white p-2 rounded-lg'>
-              <Vote
-                className='w-5 h-5'
-                aria-hidden='true'
-              />
+            <div className='bg-white text-blue-900 p-2 rounded-lg'>
+              <Vote className='w-5 h-5' aria-hidden='true' />
             </div>
             <div className='block'>
-              <h1 className='font-bold text-lg sm:text-xl tracking-tight text-slate-900 leading-none'>
+              <h1 className='font-bold text-lg sm:text-xl tracking-tight'>
                 ELECTION
               </h1>
-              <p className='text-[9px] sm:text-[10px] text-slate-500 font-semibold tracking-wider uppercase hidden xs:block'>
-                Official Results Center
+              <p className='text-[9px] sm:text-[10px] text-blue-200 font-semibold tracking-wider uppercase hidden xs:block'>
+                ผลการเลือกตั้ง
               </p>
             </div>
           </div>
 
-          {/* Sticky Bite-Sized Summary (Top 3) */}
+          {/* Top 3 Summary */}
           <div className='flex-1 flex justify-center mx-4 overflow-hidden'>
             {loading ? (
-              <div className='h-2 w-24 bg-slate-100 rounded animate-pulse motion-reduce:animate-none'></div>
+              <div className='h-2 w-24 bg-blue-700 rounded animate-pulse'></div>
             ) : (
               <div className='flex items-center space-x-4 overflow-x-auto no-scrollbar'>
                 {topParties.map((p, i) => (
-                  <div
-                    key={p.id}
-                    className='flex items-center space-x-2 shrink-0'
-                  >
-                    <span className='text-xs font-bold text-slate-400 w-4'>
-                      {i + 1}
-                    </span>
-                    <Image
-                      src={p.logoUrl}
-                      alt={p.name}
-                      width={20}
-                      height={20}
-                      className='w-5 h-5 rounded-full object-cover border border-slate-100'
-                      unoptimized
-                    />
+                  <div key={p.id} className='flex items-center space-x-2 shrink-0'>
+                    <span className='text-xs font-bold text-blue-300 w-4'>{i + 1}</span>
+                    {p.logoUrl ? (
+                      <Image
+                        src={p.logoUrl}
+                        alt={p.name}
+                        width={20}
+                        height={20}
+                        className='w-5 h-5 rounded-full object-cover border border-blue-400'
+                        unoptimized
+                      />
+                    ) : (
+                      <div className='w-5 h-5 rounded-full bg-blue-700 flex items-center justify-center'>
+                        <span className='text-[10px] font-bold'>{p.name[0]}</span>
+                      </div>
+                    )}
                     <div className='flex flex-col leading-none'>
-                      <span className='text-[10px] uppercase font-bold text-slate-500'>
+                      <span className='text-[10px] uppercase font-bold text-blue-200'>
                         {p.name}
                       </span>
-                    <span
-                      className='text-sm font-semibold'
-                      style={{ color: p.color || '#333' }}
-                    >
-                        <CountUp
-                          end={p.seats}
-                          duration={1}
-                        />
-                      </span>
+                      <span className='text-sm font-semibold'>{p.seats}</span>
                     </div>
                   </div>
                 ))}
@@ -129,191 +109,179 @@ export default function Home() {
           </div>
 
           <div className='flex items-center space-x-3'>
-            <Button
-              asChild
-              size='sm'
-              className='font-bold shadow-md bg-blue-600 hover:bg-blue-700 transition-colors'
-            >
-              <Link href='/vote'>Vote</Link>
+            <Button asChild size='sm' className='font-bold shadow-md bg-red-600 hover:bg-red-700'>
+              <Link href='/vote'>ลงคะแนน</Link>
             </Button>
           </div>
         </div>
       </header>
 
-      <main
-        id='main-content'
-        className='max-w-7xl mx-auto px-4 py-8 space-y-8'
-      >
-        {/* Error State */}
-        {error && (
-          <div className='bg-red-50 text-red-600 p-4 rounded-lg flex items-center border border-red-100 shadow-sm animate-in fade-in slide-in-from-top-2'>
-            <AlertCircle
-              className='w-5 h-5 mr-2'
-              aria-hidden='true'
-            />
-            {error}
-            <Button
-              variant='link'
-              onClick={() => refetch()}
-              className='ml-auto text-red-700 font-bold'
+      {/* Status Bar */}
+      <div className='bg-gray-800 text-white text-center py-2'>
+        <span className='text-yellow-400 font-bold'>●</span> อัปเดตล่าสุด 23
+        ก.พ. 2569 | นับคะแนนแล้ว 94%
+      </div>
+
+      {/* Hero Leaderboard */}
+      <section className='max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 md:grid-cols-3 gap-4'>
+        {topParties.map((party, idx) => (
+          <div
+            key={party.id}
+            className='bg-white rounded-xl shadow-lg overflow-hidden border-t-4'
+            style={{ borderTopColor: party.color }}
+          >
+            <div
+              className='text-white text-center py-2 font-bold'
+              style={{ backgroundColor: party.color }}
             >
-              Retry
-            </Button>
-          </div>
-        )}
-
-        {/* Top Stats Cards */}
-        <section className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6'>
-          <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200'>
-            <div className='flex items-center justify-between mb-2'>
-              <h3 className='text-slate-500 text-xs font-medium uppercase tracking-wider'>
-                Total Votes
+              อันดับ {idx + 1}
+            </div>
+            <div className='p-6 text-center'>
+              <div className='w-32 h-32 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center'>
+                {party.logoUrl ? (
+                  <Image
+                    src={party.logoUrl}
+                    alt={party.name}
+                    width={80}
+                    height={80}
+                    className='w-20 h-20 rounded-full object-cover'
+                    unoptimized
+                  />
+                ) : (
+                  <User className='w-16 h-16 text-gray-400' />
+                )}
+              </div>
+              <h3
+                className='text-2xl font-bold mb-1'
+                style={{ color: party.color }}
+              >
+                {party.name}
               </h3>
-              <Vote
-                className='w-5 h-5 text-primary'
-                aria-hidden='true'
-              />
-            </div>
-            <p className='text-3xl font-semibold text-slate-900'>
-              {loading ? (
-                <span className='animate-pulse motion-reduce:animate-none'>
-                  …
-                </span>
-              ) : (
-                <CountUp
-                  end={data?.totalVotes || 0}
-                  separator=','
-                  duration={2}
-                />
-              )}
-            </p>
-            <p className='text-xs text-slate-400 font-medium mt-1 flex items-center'>
-              Verified Votes (Nationwide)
-            </p>
-          </div>
-
-          <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200'>
-            <div className='flex items-center justify-between mb-2'>
-              <h3 className='text-slate-500 text-xs font-medium uppercase tracking-wider'>
-                Voter Turnout
-              </h3>
-              <Users
-                className='w-5 h-5 text-primary'
-                aria-hidden='true'
-              />
-            </div>
-            <p className='text-3xl font-semibold text-slate-900'>
-              {loading ? (
-                <span className='animate-pulse motion-reduce:animate-none'>
-                  …
-                </span>
-              ) : (
-                <CountUp
-                  end={data?.turnout || 0}
-                  decimals={2}
-                  suffix='%'
-                  duration={2.5}
-                />
-              )}
-            </p>
-            <div className='flex items-center text-xs text-primary font-medium mt-1'>
-              <TrendingUp
-                className='w-3 h-3 mr-1'
-                aria-hidden='true'
-              />{' '}
-              Strong Participation
-            </div>
-          </div>
-
-          <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200'>
-            <div className='flex items-center justify-between mb-2'>
-              <h3 className='text-slate-500 text-xs font-medium uppercase tracking-wider'>
-                Poll Status
-              </h3>
-              <RefreshCw
-                className={`w-5 h-5 text-primary ${
-                  loading ? 'animate-spin motion-reduce:animate-none' : ''
-                }`}
-                aria-hidden='true'
-              />
-            </div>
-            <p className='text-3xl font-semibold text-slate-900'>
-              {loading ? (
-                <span className='animate-pulse motion-reduce:animate-none'>
-                  …
-                </span>
-              ) : (
-                <CountUp
-                  end={data?.countingProgress || 0}
-                  decimals={1}
-                  suffix='%'
-                  duration={2}
-                />
-              )}
-            </p>
-            <div className='w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden'>
+              <p className='text-gray-500 mb-4'>{party.leader}</p>
               <div
-                className='bg-primary h-1.5 rounded-full transition-all duration-1000 ease-out'
-                style={{ width: `${data?.countingProgress || 0}%` }}
-              ></div>
+                className='text-5xl font-bold'
+                style={{ color: party.color }}
+              >
+                {party.seats}
+              </div>
+              <p className='text-gray-500'>ที่นั่ง ส.ส.</p>
             </div>
-            <p className='text-xs text-slate-400 mt-1'>Constituencies Closed</p>
           </div>
-        </section>
+        ))}
+      </section>
 
-        {/* Main Content Grid */}
-        <section className='grid grid-cols-1 lg:grid-cols-12 gap-8'>
-          {/* Left Column: Parliament & Leaderboard (6 cols) */}
-          <div className='lg:col-span-6 space-y-8'>
-            {/* Visual: Parliament Chart */}
-            <div className='bg-white p-6 rounded-xl shadow-sm border border-slate-200'>
-              <div className='flex items-center justify-between mb-6'>
-                <div>
-                  <h2 className='text-lg font-bold text-slate-800'>
-                    Parliament Seats Projected
-                  </h2>
-                  <p className='text-slate-400 text-xs'>
-                    Based on current vote tally in 400 constituencies + 100
-                    Party List
-                  </p>
+      {/* Main Content Grid */}
+      <div className='max-w-7xl mx-auto px-4 pb-8 grid grid-cols-1 lg:grid-cols-3 gap-6'>
+        {/* Left Column: Party List Votes */}
+        <section className='bg-white rounded-xl shadow-lg p-6'>
+          <h3 className='text-lg font-bold mb-4'>ผลคะแนน สส. บัญชีรายชื่อ</h3>
+          <div className='text-sm text-gray-500 mb-4'>
+            ผู้ใช้สิทธิ์ทั้งหมด:{' '}
+            <span className='font-bold text-gray-800'>
+              {(data?.totalVotes || 34565642).toLocaleString()} คน
+            </span>
+          </div>
+
+          <div className='space-y-4'>
+            {mockPartyListData.map((party) => (
+              <div key={party.name}>
+                <div className='flex justify-between mb-1'>
+                  <span
+                    className='font-medium'
+                    style={{ color: party.color }}
+                  >
+                    {party.name}
+                  </span>
+                  <span className='font-bold'>
+                    {party.votes.toLocaleString()}
+                  </span>
                 </div>
-                <div className='text-xs font-bold bg-slate-100 px-3 py-1 rounded-full text-slate-500 border border-slate-200'>
-                  Target: 250 to Form Gov
+                <div className='h-4 bg-gray-100 rounded-full overflow-hidden'>
+                  <div
+                    className='h-full rounded-full'
+                    style={{
+                      width: `${(party.votes / 25000000) * 100}%`,
+                      backgroundColor: party.color,
+                    }}
+                  ></div>
                 </div>
               </div>
-              {loading ? (
-                <div className='h-[300px] flex items-center justify-center text-slate-400 animate-pulse motion-reduce:animate-none bg-slate-50 rounded-lg'>
-                  Loading Chart…
-                </div>
-              ) : data && data.partyStats.length > 0 ? (
-                <ParliamentChart data={data?.partyStats || []} />
-              ) : (
-                <div className='h-[300px] flex flex-col items-center justify-center text-slate-400 bg-slate-50 rounded-lg border-2 border-dashed border-slate-100'>
-                  <BarChart3
-                    className='w-10 h-10 mb-2 opacity-50'
-                    aria-hidden='true'
-                  />
-                  <p>No seat projection available yet.</p>
-                  <p className='text-sm'>
-                    Results will appear as counts come in.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Visual: Leaderboard */}
-            <Leaderboard
-              data={data?.partyStats || []}
-              totalSeats={totalProjecedSeats}
-            />
-          </div>
-
-          {/* Right Column: Live Map (6cols) */}
-          <div className='lg:col-span-6 space-y-6'>
-            <ThailandMap />
+            ))}
           </div>
         </section>
-      </main>
+
+        {/* Right Column: MP Table */}
+        <div className='lg:col-span-2 bg-white rounded-xl shadow-lg p-6'>
+          <div className='flex justify-between items-center mb-4'>
+            <h3 className='text-lg font-bold'>
+              จำนวน ส.ส. ในสภา (500 ที่นั่ง)
+            </h3>
+          </div>
+
+          <div className='overflow-x-auto'>
+            <table className='w-full'>
+              <thead>
+                <tr className='border-b-2'>
+                  <th className='text-left py-3 px-2'>ลำดับ</th>
+                  <th className='text-left py-3 px-2'>พรรค</th>
+                  <th className='text-center py-3 px-2'>สส.เขต</th>
+                  <th className='text-center py-3 px-2'>บัญชี</th>
+                  <th className='text-center py-3 px-2 font-bold bg-gray-50'>
+                    รวม
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {topParties.map((party, idx) => (
+                  <tr
+                    key={party.id}
+                    className='border-b'
+                  >
+                    <td
+                      className='py-3 px-2 font-bold'
+                      style={{ color: party.color }}
+                    >
+                      {idx + 1}
+                    </td>
+                    <td className='py-3 px-2'>
+                      <div className='flex items-center'>
+                        <span
+                          className='w-3 h-3 rounded-full mr-2'
+                          style={{ backgroundColor: party.color }}
+                        ></span>
+                        {party.name}
+                      </div>
+                    </td>
+                    <td className='py-3 px-2 text-center'>
+                      {Math.floor((party.seats || 0) * 0.75)}
+                    </td>
+                    <td className='py-3 px-2 text-center'>
+                      {Math.ceil((party.seats || 0) * 0.25)}
+                    </td>
+                    <td className='py-3 px-2 text-center font-bold bg-gray-50'>
+                      {party.seats}
+                    </td>
+                  </tr>
+                ))}
+                <tr className='border-b'>
+                  <td className='py-3 px-2 font-bold text-gray-500'>4</td>
+                  <td className='py-3 px-2'>
+                    <div className='flex items-center'>
+                      <span className='w-3 h-3 rounded-full bg-gray-400 mr-2'></span>
+                      อื่นๆ
+                    </div>
+                  </td>
+                  <td className='py-3 px-2 text-center'>20</td>
+                  <td className='py-3 px-2 text-center'>15</td>
+                  <td className='py-3 px-2 text-center font-bold bg-gray-50'>
+                    35
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
