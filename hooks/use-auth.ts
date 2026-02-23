@@ -11,6 +11,17 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
+// Cookie helper functions
+function setCookie(name: string, value: string, days = 7) {
+  const expires = new Date()
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000)
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Lax`
+}
+
+function removeCookie(name: string) {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
+}
+
 // Backend wraps all responses in { ok: boolean, data: T }
 interface ApiResponse<T> {
   ok: boolean
@@ -28,11 +39,13 @@ export function useLoginMutation() {
       return data
     },
     onSuccess: async (data) => {
+      // Save token to both cookie (for middleware) and localStorage (for Zustand persist)
+      setCookie('auth-token', data.accessToken)
       setToken(data.accessToken)
 
       try {
-        const { data: res } = await api.get<ApiResponse<MeResponse>>('/auth/me')
-        const me = res.data
+        const { data: res } = await api.get<MeResponse>('/auth/me')
+        const me = res
 
         const userForStore: User = {
           id: me.id,

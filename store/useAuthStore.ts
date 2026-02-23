@@ -2,6 +2,13 @@ import { User } from '@/types/user'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
+// Cookie helper for logout
+function removeCookie(name: string) {
+  if (typeof document !== 'undefined') {
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`
+  }
+}
+
 interface AuthState {
   user: User | null
   token: string | null
@@ -25,7 +32,10 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setToken: (token) => set({ token }),
       login: (user, token) => set({ user, token, isAuthenticated: true }),
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      logout: () => {
+        removeCookie('auth-token')
+        set({ user: null, token: null, isAuthenticated: false })
+      },
     }),
     {
       name: 'auth-storage',

@@ -6,10 +6,24 @@ export interface User {
   firstName: string
   lastName: string
   address: string
-  province?: Province
-  district?: District
-  constituency?: Constituency
+  province?: Province | { id: number; name: string }
+  district?: District | { id: number; name: string }
+  constituency?: Constituency | { id: number; number: number; isClosed: boolean } | null | undefined
   roles: string[]
+  createdAt?: string
+}
+
+// API response from /admin/users
+export interface AdminUserResponse {
+  id: number
+  citizenId: string
+  firstName: string
+  lastName: string
+  address?: string
+  provinceId?: number
+  districtId?: number
+  constituencyId?: number
+  roles: { role: { id: number; name: string } }[]
   createdAt?: string
 }
 
@@ -21,18 +35,4 @@ export interface ManageUsersResult {
     limit: number
     totalPages: number
   }
-}
-
-export interface ApiUser {
-  id: number
-  citizenId?: string
-  nationalId?: string
-  firstName: string
-  lastName: string
-  address?: string
-  province?: { id: number; name: string }
-  district?: { id: number; name: string }
-  constituency?: { id: number; number: number } | null
-  roles: { role: { id: number; name: string } }[]
-  createdAt?: string
 }

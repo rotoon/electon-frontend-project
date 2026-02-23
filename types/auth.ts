@@ -41,16 +41,16 @@ export interface RegisterResponse {
   createdAt: string
 }
 
-// Me response roles are string[] in docs
+// Me response from backend
 export interface MeResponse {
   id: number
   citizenId: string
   firstName: string
   lastName: string
   address: string
-  province: Province
-  district: District
-  constituency: Constituency
-  roles: string[]
+  province: { id: number; name: string }
+  district: { id: number; name: string }
+  constituency: { id: number; number: number; isClosed: boolean } | null
   createdAt: string
+  roles: string[]
 }

@@ -10,7 +10,7 @@ export function usePartyStats() {
   return useQuery<PartyStats[]>({
     queryKey: ['party-stats'],
     queryFn: async () => {
-      const { data } = await api.get('/public/parties?limit=1000')
+      const { data } = await api.get('/public/parties')
       return (data.data || []).map((p: ApiPartyItem) => ({
         id: p.id,
         name: p.name,
@@ -28,7 +28,7 @@ export function useParties() {
   return useQuery<Party[]>({
     queryKey: ['parties'],
     queryFn: async () => {
-      const { data } = await api.get('/ec/parties?limit=1000')
+      const { data } = await api.get('/ec/parties')
       return transformParties(data.data?.data || []) as Party[]
     },
   })
