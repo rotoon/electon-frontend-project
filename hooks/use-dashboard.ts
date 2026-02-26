@@ -7,7 +7,7 @@ export function usePublicConstituencies() {
   return useQuery<PublicConstituency[]>({
     queryKey: ['public-constituencies'],
     queryFn: async () => {
-      const { data } = await api.get('/public/constituencies?limit=1000')
+      const { data } = await api.get('/public/constituencies')
 
       interface ApiConstituency {
         id: number

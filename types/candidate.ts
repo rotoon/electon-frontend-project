@@ -1,4 +1,100 @@
-import { PaginationMeta } from './common'
+import { PaginationMeta } from "./common"
+
+// === GET Response Types ===
+
+/** แต่ละ item ใน list จาก GET /ec/candidates */
+export interface CandidateItem {
+  id: number
+  number: number
+  firstName: string
+  lastName: string
+  candidatePolicy: string | null
+  imageUrl: string
+  partyId: number
+  constituencyId: number
+  party: {
+    name: string
+  }
+  constituency: {
+    number: number
+    province: {
+      name: string
+    }
+  }
+}
+
+/** Response จาก GET /ec/candidates (Paginated) */
+export interface GetCandidatesResponse {
+  total: number
+  candidate: CandidateItem[]
+  page: number
+  limit: number
+  totalPages: number
+}
+
+/** Query params สำหรับดึงรายการ */
+export interface GetCandidatesQuery {
+  page?: number
+  limit?: number
+  search?: string
+  sortBy?: "id" | "number" | "firstName" | "lastName"
+  order?: "asc" | "desc"
+}
+
+// === Mutation Payload Types ===
+
+/** สร้างผู้สมัคร POST /ec/candidates */
+export interface CreateCandidatePayload {
+  number: number
+  firstName: string
+  lastName: string
+  candidatePolicy?: string
+  imageUrl: string
+  partyId: number
+  constituencyId: number
+}
+
+/** แก้ไขผู้สมัคร PATCH /ec/candidates/:id (Partial) */
+export interface UpdateCandidatePayload {
+  number?: number
+  firstName?: string
+  lastName?: string
+  candidatePolicy?: string
+  imageUrl?: string
+  partyId?: number
+  constituencyId?: number
+}
+
+// === Mutation Response Types ===
+
+/** Response จาก POST / PATCH */
+export interface MutateCandidateResponse {
+  message: string
+  data: {
+    id: number
+    number: number
+    firstName: string
+    lastName: string
+    candidatePolicy: string | null
+    imageUrl: string
+    partyId: number
+    constituencyId: number
+  }
+}
+
+/** Response จาก DELETE */
+export interface DeleteCandidateResponse {
+  message: string
+}
+
+// === Internal Types (for hooks) ===
+
+export interface ManageCandidatesResult {
+  candidates: CandidateItem[]
+  meta: PaginationMeta
+}
+
+// === Legacy voter type (ไม่เปลี่ยน) ===
 
 export interface Candidate {
   id: number
@@ -13,39 +109,4 @@ export interface Candidate {
     color: string
     policy?: string
   } | null
-}
-
-export interface ManageCandidatesResult {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  candidates: any[]
-  meta: PaginationMeta
-}
-
-export interface ApiManageCandidate {
-  id: number
-  firstName: string
-  lastName: string
-  candidateNumber: number
-  imageUrl: string
-  personalPolicy: string
-  nationalId: string
-  constituencyId: number
-  party?: { id: number; name: string; logoUrl: string }
-  constituency?: {
-    id: number
-    province: string
-    zoneNumber: number
-    isPollOpen: boolean
-  }
-}
-
-export interface CreateCandidatePayload {
-  first_name: string
-  last_name: string
-  candidate_number: number
-  party_id: number
-  constituency_id: number
-  image_url: string
-  personal_policy: string
-  national_id: string
 }

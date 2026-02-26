@@ -1,7 +1,7 @@
-import { Constituency, ManageConstituenciesResult } from '@/types/constituency'
 import api from '@/lib/api'
 import { getApiErrorMessage } from '@/lib/error'
 import { transformConstituencies } from '@/lib/transforms'
+import { Constituency, ManageConstituenciesResult } from '@/types/constituency'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
@@ -12,7 +12,7 @@ export function useConstituencies() {
   return useQuery({
     queryKey: ['constituencies'],
     queryFn: async () => {
-      const { data } = await api.get('/public/constituencies?limit=1000')
+      const { data } = await api.get('/ec/constituencies')
       return transformConstituencies(data.data || []) as Constituency[]
     },
   })
@@ -38,7 +38,7 @@ export function useManageConstituencies(params: {
       }
 
       const { data } = await api.get(
-        `/ec/control/constituencies?${queryParams.toString()}`,
+        `/ec/constituencies?${queryParams.toString()}`,
       )
 
       const rawData = data.data || []
@@ -62,16 +62,16 @@ export function useAdminConstituencies(params: {
     queryKey: ['admin-constituencies', province, page, limit],
     queryFn: async () => {
       // Fetch all data without pagination (backend may not support it)
-      const { data } = await api.get('/admin/constituencies?limit=1000')
+      const { data } = await api.get('/admin/constituencies')
 
       // Backend returns array directly
-      const allData = Array.isArray(data) ? data : (data.data || [])
-      
+      const allData = Array.isArray(data) ? data : data.data || []
+
       // Filter by provinceId if provided
       let filteredData = allData
       if (province && province !== 'all') {
-        filteredData = allData.filter((c: { provinceId: number }) => 
-          c.provinceId === parseInt(province)
+        filteredData = allData.filter(
+          (c: { provinceId: number }) => c.provinceId === parseInt(province),
         )
       }
 
@@ -81,11 +81,13 @@ export function useAdminConstituencies(params: {
       const start = (page - 1) * limit
       const paginatedData = filteredData.slice(start, start + limit)
 
-      const constituencies = transformConstituencies(paginatedData) as Constituency[]
+      const constituencies = transformConstituencies(
+        paginatedData,
+      ) as Constituency[]
 
-      return { 
-        constituencies, 
-        meta: { total, page, limit, totalPages } 
+      return {
+        constituencies,
+        meta: { total, page, limit, totalPages },
       }
     },
   })

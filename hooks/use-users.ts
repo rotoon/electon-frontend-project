@@ -8,7 +8,7 @@ export function useUsers() {
   return useQuery({
     queryKey: ['users'],
     queryFn: async () => {
-      const { data } = await api.get('/admin/users?limit=1000')
+      const { data } = await api.get('/admin/users')
       const allData = data.users || []
 
       return allData.map((u: AdminUserResponse) => {

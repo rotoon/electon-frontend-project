@@ -1,15 +1,18 @@
+import api from '@/lib/api'
+import { getApiErrorMessage } from '@/lib/error'
+import { transformCandidates } from '@/lib/transforms'
 import {
   Candidate,
-  ManageCandidatesResult,
-  ApiManageCandidate,
+  CandidateItem,
   CreateCandidatePayload,
+  GetCandidatesQuery,
+  ManageCandidatesResult,
+  UpdateCandidatePayload,
 } from '@/types/candidate'
-import api from '@/lib/api'
-import { transformCandidates } from '@/lib/transforms'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-// Hook to fetch Candidates (Voter)
+// Hook to fetch Candidates (Voter) - ไม่เปลี่ยน
 export function useCandidates(constituencyId?: string | number | null) {
   return useQuery({
     queryKey: ['candidates', constituencyId],
@@ -21,97 +24,108 @@ export function useCandidates(constituencyId?: string | number | null) {
   })
 }
 
-// Hook to fetch Candidates (Management - fetches all or filtered)
-export function useManageCandidates(params: {
-  constituencyId?: string | number | null
-  partyId?: string | number | null
-  page?: number
-  limit?: number
-}) {
-  const { constituencyId, partyId, page = 1, limit = 10 } = params
+// Hook to fetch Candidates (EC Management - Paginated with search/sort)
+export function useManageCandidates(
+  params: GetCandidatesQuery & {
+    constituencyId?: string | number | null
+    partyId?: string | number | null
+  },
+) {
+  const {
+    constituencyId,
+    partyId,
+    page = 1,
+    limit = 10,
+    search,
+    sortBy,
+    order,
+  } = params
 
   return useQuery<ManageCandidatesResult>({
-    queryKey: ['manage-candidates', constituencyId, partyId, page, limit],
+    queryKey: [
+      'manage-candidates',
+      constituencyId,
+      partyId,
+      page,
+      limit,
+      search,
+      sortBy,
+      order,
+    ],
     queryFn: async () => {
       const queryParams = new URLSearchParams()
       queryParams.set('page', page.toString())
       queryParams.set('limit', limit.toString())
 
-      if (constituencyId && constituencyId !== 'all') {
-        queryParams.set('constituencyId', constituencyId.toString())
-      }
-      if (partyId && partyId !== 'all') {
+      if (search) queryParams.set('search', search)
+      if (sortBy) queryParams.set('sortBy', sortBy)
+      if (order) queryParams.set('order', order)
+      if (partyId && partyId !== 'all')
         queryParams.set('partyId', partyId.toString())
-      }
 
       const { data } = await api.get(`/ec/candidates?${queryParams.toString()}`)
 
-      const rawCandidates = Array.isArray(data.data) ? data.data : []
-      const meta = data.meta || {
-        total: 0,
-        page: 1,
-        limit: 10,
-        totalPages: 1,
+      // API ใหม่ return: { total, candidate: [], page, limit, totalPages }
+      const candidates: CandidateItem[] = data.candidate || []
+      const meta = {
+        total: data.total || 0,
+        page: data.page || 1,
+        limit: data.limit || 10,
+        totalPages: data.totalPages || 1,
       }
-
-      const candidates = rawCandidates.map((c: ApiManageCandidate) => ({
-        ...c,
-        first_name: c.firstName,
-        last_name: c.lastName,
-        candidate_number: c.candidateNumber,
-        image_url: c.imageUrl,
-        personal_policy: c.personalPolicy,
-        national_id: c.nationalId,
-        constituency_id: c.constituencyId,
-        parties: c.party
-          ? {
-              ...c.party,
-              logo_url: c.party.logoUrl,
-            }
-          : null,
-        constituencies: c.constituency
-          ? {
-              ...c.constituency,
-              province: c.constituency.province,
-              zone_number: c.constituency.zoneNumber,
-              is_poll_open: c.constituency.isPollOpen,
-            }
-          : null,
-      }))
 
       return { candidates, meta }
     },
   })
 }
 
+// POST /ec/candidates — สร้างผู้สมัครใหม่
 export function useCreateCandidateMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async (payload: CreateCandidatePayload) => {
-      const apiPayload = {
-        firstName: payload.first_name,
-        lastName: payload.last_name,
-        candidateNumber: payload.candidate_number,
-        partyId: payload.party_id,
-        constituencyId: payload.constituency_id,
-        imageUrl: payload.image_url,
-        personalPolicy: payload.personal_policy,
-        nationalId: payload.national_id,
-      }
-      await api.post('/ec/candidates', apiPayload)
+      await api.post('/ec/candidates', payload)
     },
     onSuccess: () => {
       toast.success('เพิ่มผู้สมัครสำเร็จ')
       queryClient.invalidateQueries({ queryKey: ['manage-candidates'] })
       queryClient.invalidateQueries({ queryKey: ['candidates'] })
       queryClient.invalidateQueries({ queryKey: ['ec-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
-    onError: () => {
-      toast.error('เพิ่มผู้สมัครไม่สำเร็จ')
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'เพิ่มผู้สมัครไม่สำเร็จ'))
     },
   })
 }
 
+// PATCH /ec/candidates/:id — แก้ไขผู้สมัคร
+export function useUpdateCandidateMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({
+      id,
+      payload,
+    }: {
+      id: number
+      payload: UpdateCandidatePayload
+    }) => {
+      await api.patch(`/ec/candidates/${id}`, payload)
+    },
+    onSuccess: () => {
+      toast.success('แก้ไขข้อมูลผู้สมัครสำเร็จ')
+      queryClient.invalidateQueries({ queryKey: ['manage-candidates'] })
+      queryClient.invalidateQueries({ queryKey: ['candidates'] })
+      queryClient.invalidateQueries({ queryKey: ['ec-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'แก้ไขไม่สำเร็จ'))
+    },
+  })
+}
+
+// DELETE /ec/candidates/:id — ลบผู้สมัคร
 export function useDeleteCandidateMutation() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -123,7 +137,10 @@ export function useDeleteCandidateMutation() {
       queryClient.invalidateQueries({ queryKey: ['manage-candidates'] })
       queryClient.invalidateQueries({ queryKey: ['candidates'] })
       queryClient.invalidateQueries({ queryKey: ['ec-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
-    onError: () => toast.error('ลบไม่สำเร็จ'),
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'ลบไม่สำเร็จ'))
+    },
   })
 }
