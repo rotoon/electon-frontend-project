@@ -53,6 +53,7 @@ export default function RootLayout({
     <html
       lang='th'
       className={`${kanit.variable}`}
+      suppressHydrationWarning={true}
     >
       <head>
         {/* Preconnect to external resources for performance */}
