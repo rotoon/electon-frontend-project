@@ -18,6 +18,7 @@ const publicRoutes = [
   '/auth/register',
   '/parties',
   '/results',
+  '/district',
   '/api/auth/login',
   '/api/auth/register',
 ]
@@ -32,7 +33,11 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Allow public routes
-  if (publicRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'))) {
+  if (
+    publicRoutes.some(
+      (route) => pathname === route || pathname.startsWith(route + '/'),
+    )
+  ) {
     return NextResponse.next()
   }
 
@@ -76,7 +81,9 @@ export function middleware(request: NextRequest) {
         if (!userRoles.includes(requiredRole)) {
           // User doesn't have required role, redirect to appropriate portal
           if (userRoles.includes('ROLE_ADMIN')) {
-            return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+            return NextResponse.redirect(
+              new URL('/admin/dashboard', request.url),
+            )
           } else if (userRoles.includes('ROLE_EC')) {
             return NextResponse.redirect(new URL('/ec/dashboard', request.url))
           } else {
